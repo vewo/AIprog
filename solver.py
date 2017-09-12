@@ -1,11 +1,10 @@
-#from Node import Vehicle, State, Node
 import Node
 from Node import State
 from Node import Vehicle
 
-#Importere data og gjøre om til vehicle object Done
-#Lage start state med vehicle object Done
-#Gi start state til Astar Done
+#Importere data og gjøre om til vehicle object
+#Lage start state med vehicle object
+#Gi start state til Astar
 #Får tilbake Goal-node der den har kommet til mål
 #Backtracke fra goal-node for å finne path
 #Backtack ferdig til parent node = start node
@@ -15,7 +14,7 @@ class Solver(object):
     results = []
     path = []
 
-    def __init__(self, board, start):
+    def __init__(self, board,start):
         self.board = board
         self.start = start
         with open(board) as infile:
@@ -28,7 +27,6 @@ class Solver(object):
             number += 1
             element.insert(0, number)
             listToTuple = tuple(element)
-            print(listToTuple)
             vehicleList.append(Vehicle(*listToTuple))
         return vehicleList
 

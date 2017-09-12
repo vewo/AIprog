@@ -1,24 +1,46 @@
+#from Node import Vehicle, State, Node
+import Node
+from Node import State
 from Node import Vehicle
 
-#Importere data og gjøre om til vehicle object
-#Lage start state med vehicle object
-#Gi start state til Astar
+#Importere data og gjøre om til vehicle object Done
+#Lage start state med vehicle object Done
+#Gi start state til Astar Done
 #Får tilbake Goal-node der den har kommet til mål
 #Backtracke fra goal-node for å finne path
 #Backtack ferdig til parent node = start node
 
-results = []
-with open('easy.txt') as infile:
-    results = [[int(i) for i in line.strip().split(',')] for line in infile]
+class Solver(object):
+    board = ""
+    results = []
+    path = []
 
-def generateVehicleList(Board):
-    vehicleList = []
-    number = -1
-    for element in Board:
-        number += 1
-        element.append(number)
-        listToTuple = tuple(element)
-        vehicleList.append(Vehicle(*listToTuple))
-    return vehicleList
+    def __init__(self, board, start):
+        self.board = board
+        self.start = start
+        with open(board) as infile:
+            self.results = [[int(i) for i in line.strip().split(',')] for line in infile]
 
-generateVehicleList(results)
+    def generateVehicleList(self):
+        vehicleList = []
+        number = -1
+        for element in self.results:
+            number += 1
+            element.insert(0, number)
+            listToTuple = tuple(element)
+            print(listToTuple)
+            vehicleList.append(Vehicle(*listToTuple))
+        return vehicleList
+
+    def generateStartState(self):
+        s = Solver("easy.txt")
+        start = State(s.generateVehicleList)
+        return start
+
+    def findPath(self, goal):
+        path.append(goal.getID)
+        if (goal != start):
+            findPath(goal.parent)
+
+s = Solver("easy.txt")
+s.generateVehicleList()

@@ -8,10 +8,12 @@ class A_star_search(object):
 
 	def a_star_search(graph, start):
 		closed = []
+		open_nodes = []
 		frontier = PriorityQueue() #Nodes
 		created = {} #(hashID, nodes)
 
 		frontier.put(((0+start.heuristic(start, goal)), start)) #g(S0)=0
+		open_nodes.append(start)
 
 		while True: 
 			if frontier.empty():
@@ -27,12 +29,19 @@ class A_star_search(object):
 				else: 
 					created.add(c.getID(), c)
 				x.kids.add(c)
-				if not (c in closed or c in list(frontier)):
+				if not ((c in closed) or (c in open_nodes)):
 					f = attach_and_eval(c,x)
 					frontier.put((f, c))
-				else if x.g_value + cost(x,c) < c.g_value():
+					open_nodes.append(c)
+				elif x.g_value + x.cost(x,c) < c.g_value():
 					attach_and_eval(c,x)
-					if c in closed:
+					if c in open_nodes:
+						open_nodes_temp = []
+						for i in range(len(open_nodes)):
+							open_nodes_temp.append(frontier.get()[1])
+						for i in range(len(open_nodes_temp)):
+							frontier.put((open_nodes_temp[i].f_value, open_nodes_temp[i]))
+					elif c in closed:
 						propagate_path_improvements(c)
 
 	def attach_and_eval(self, a,b):

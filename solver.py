@@ -14,9 +14,8 @@ class Solver(object):
     results = []
     path = []
 
-    def __init__(self, board,start):
+    def __init__(self, board):
         self.board = board
-        self.start = start
         with open(board) as infile:
             self.results = [[int(i) for i in line.strip().split(',')] for line in infile]
 

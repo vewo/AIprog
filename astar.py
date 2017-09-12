@@ -4,7 +4,7 @@ import Node
 import State
 import Vehicle
 
-class A_star_search(object): 
+class A_star_search(object):
 
 	def a_star_search(graph, start):
 		closed = []
@@ -15,7 +15,7 @@ class A_star_search(object):
 		frontier.put(((0+start.heuristic(start, goal)), start)) #g(S0)=0
 		open_nodes.append(start)
 
-		while True: 
+		while True:
 			if frontier.empty():
 				return False
 			x = frontier.get()[1]
@@ -26,7 +26,7 @@ class A_star_search(object):
 			for c in children:
 				if created.hasKey(c.getID()):
 					c = created[created.get(c.getID())] #Probably not right
-				else: 
+				else:
 					created.add(c.getID(), c)
 				x.kids.add(c)
 				if not ((c in closed) or (c in open_nodes)):
@@ -57,14 +57,3 @@ class A_star_search(object):
 				c.g_value = a.g_value + cost(a,c)
 				c.f_value = c.g_value + a.heuristic(a)
 				propagate_path_improvements(c)
-
-
-
-
-
-
-
-
-
-
-

@@ -21,7 +21,7 @@ class Node(object):
 	def getID(self):
 		return self.state.hashID()
 
-	def generateChildren(self): 
+	def generateChildren(self):
 		children = []
 		for v in self.state.vechicles:
 			if v.orientation = 0:

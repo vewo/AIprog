@@ -4,7 +4,7 @@ class Node(object):
 	g_value = 0
 	h_value = 0
 	f_value = g_value + h_value
-	#status = Open
+	status = Open
 	parent = None
 	kids = []
 
@@ -24,7 +24,7 @@ class Node(object):
 	def generateChildren(self):
 		children = []
 		for v in self.state.vechicles:
-			if v.orientation == 0:
+			if v.orientation = 0:
 				if (self.state.isAvailable(v.x-1, v.y)):
 					kidState = self.state.vehicles
 					kidState.remove(v)
@@ -39,7 +39,7 @@ class Node(object):
 					kidState.insert(v.no, newCarPosition)
 					kid = Node(kidState, self)
 					children.append(kid)
-			elif v.orientation == 1:
+			elif v.orientation = 1:
 				if (self.state.isAvailable(v.x, v.y+1)):
 					kidState = self.state.vehicles
 					kidState.remove(v)
@@ -79,11 +79,11 @@ class State(object):
 
 	def isAvailable(x,y):
 		for v in self.vehicles:
-			if v.orientation == 0:
-				if (v.y == y) and (x in range(v.x, v.x+size)):
+			if v.orientation = 0:
+				if (v.y = y) and (x in range(v.x, v.x+size)):
 					return False
-			elif v.orientation == 1:
-				if (v.x == x) and (y in range(v.y, v.y+size)):
+			elif v.orientation = 1:
+				if (v.x = x) and (y in range(v.y, v.y+size)):
 					return False
 			return True
 

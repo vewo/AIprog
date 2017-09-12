@@ -4,7 +4,7 @@ class Node(object):
 	g_value = 0
 	h_value = 0
 	f_value = g_value + h_value
-	status = Open
+	#status = Open
 	parent = None
 	kids = []
 
@@ -23,9 +23,10 @@ class Node(object):
 	def getID(self):
 		return self.state.hashID()
 
-	def generateChildren(self): 
+	def generateChildren(self):
 		children = []
 		for v in self.state.vechicles:
+			break
 
 	def check_Solution(self):
 		return (((self.state.vechicles[0].x + self.state.vechicles[0].size - 1) == 5) and (self.state.vechicles[0].y == 2))
@@ -54,9 +55,9 @@ class State(object):
 
 class Vehicle(object):
 
-	def __init__(self, no, orientation, x,y,size):
-	    self.no = no
-	    self.orientation = orientation
-	    self.x = x
-	    self.y = y
-	    self.size = size
+	def __init__(self, orientation, x,y,size, no):
+		self.orientation = orientation
+		self.x = x
+		self.y = y
+		self.size = size
+		self.no = no

@@ -1,3 +1,5 @@
+from Node import Vehicle
+
 #Importere data og gjøre om til vehicle object
 #Lage start state med vehicle object
 #Gi start state til Astar
@@ -5,7 +7,7 @@
 #Backtracke fra goal-node for å finne path
 #Backtack ferdig til parent node = start node
 
-import Vehicle
+vehicleList = []
 
 E = [[0,2,2,2],
 [0,0,4,3],
@@ -14,4 +16,12 @@ E = [[0,2,2,2],
 [1,2,0,2],
 [1,4,2,2]]
 
-vehicle = 
+def generateVehicleList(Board):
+    number = -1
+    for element in Board:
+        number += 1
+        element.append(number)
+        listToTuple = tuple(element)
+        vehicleList.append(Vehicle(*listToTuple))
+
+generateVehicleList(E)

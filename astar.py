@@ -42,9 +42,10 @@ class A_star_search(object):
 					if c in open_nodes:
 						open_nodes_temp = []
 						for i in range(len(open_nodes)):
-							open_nodes_temp.append(frontier.get()[1])
+							open_nodes_temp.append(frontier.get())
 						for i in range(len(open_nodes_temp)):
-							frontier.put((open_nodes_temp[i].f_value, open_nodes_temp[i]))
+							open_nodes_temp[i].priority = open_nodes_temp[i].f_value
+							frontier.put(open_nodes_temp[i])
 					elif c in closed:
 						self.propagate_path_improvements(c)
 

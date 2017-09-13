@@ -1,6 +1,7 @@
-import Node
+from Node import Node
 from Node import State
 from Node import Vehicle
+from astar import A_star_search
 
 #Importere data og gjøre om til vehicle object
 #Lage start state med vehicle object
@@ -30,14 +31,26 @@ class Solver(object):
         return vehicleList
 
     def generateStartState(self):
-        s = Solver("easy.txt")
-        start = State(s.generateVehicleList)
+        start = State(self.generateVehicleList())
         return start
 
+    def generateStartNode(self):
+        startState = State(self.generateVehicleList())
+        startNode = Node(startState, None)
+        return startNode
+
     def findPath(self, goal):
+        path = []
         path.append(goal.getID)
-        if (goal != start):
+        if (goal.parent != None):
             findPath(goal.parent)
+        return(path)
 
 s = Solver("easy.txt")
-s.generateVehicleList()
+v = s.generateStartNode()
+a = A_star_search()
+g = a.a_star_search(v)
+#print(g)
+#print(s.findPath(g))
+
+

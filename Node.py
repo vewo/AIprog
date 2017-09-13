@@ -4,63 +4,76 @@ class Node(object):
 	g_value = 0
 	h_value = 0
 	f_value = g_value + h_value
-	status = Open
 	parent = None
 	kids = []
 
 	def __init__(self, state, parent):
-	    self.state = state
-	    self.parent = parent
-	    self.walls = [(4,3),(4,4)]
+		self.state = state
+		self.parent = parent
+		self.walls = [(4,3),(4,4)]
+
+	def __repr__(self):
+		s = ""
+		for v in self.state.vehicles:
+			s+= "(" + str(v.no) + "," + str(v.orientation) + "," + str(v.x) + "," + str(v.y) + "," +  str(v.size) + "), "
+		return s
 
 
-	def heuristic(self, b):
-	    goalDistance = 4-self.state.vehicles[0].x
-	    return math.sqrt((x1 - x2)**2) + math.sqrt((y1 - y2)**2) #Manhattan distance
+	def heuristic(self):
+		blocking = 0
+		v0 = None
+		for v in self.state.vehicles:
+			if v.no == 0:
+				v0 = v
+			if v.orientation == 1:
+				if (2 in range(v.y, v.y+v.size)):
+					blocking += 1
+		goalDistance = 4-v0.x
+		return goalDistance+blocking
 
 	def getID(self):
-		return self.state.hashID()
+		return self.state.getID()
 
 	def generateChildren(self):
 		children = []
-		for v in self.state.vechicles:
-			if v.orientation = 0:
-				if (self.state.isAvailable(v.x-1, v.y)):
-					kidState = self.state.vehicles
+		for v in self.state.vehicles:
+			if v.orientation == 0:
+				if self.state.isAvailable(v.x-1,v.y):
+					kidState = list(self.state.vehicles)
 					kidState.remove(v)
 					newCarPosition = Vehicle(v.no, v.orientation, v.x-1, v.y, v.size)
 					kidState.insert(v.no, newCarPosition)
-					kid = Node(kidState, self)
+					kid = Node(State(kidState), self)
 					children.append(kid)
 				if (self.state.isAvailable(v.x+v.size, v.y)):
-					kidState = self.state.vehicles
-					kidState.remove(v)
+					kidState = list(self.state.vehicles)
+					del kidState[self.state.vehicles.index(v)]
 					newCarPosition = Vehicle(v.no, v.orientation, v.x+1, v.y, v.size)
 					kidState.insert(v.no, newCarPosition)
-					kid = Node(kidState, self)
+					kid = Node(State(kidState), self)
 					children.append(kid)
-			elif v.orientation = 1:
+			elif v.orientation == 1:
 				if (self.state.isAvailable(v.x, v.y+1)):
-					kidState = self.state.vehicles
+					kidState = list(self.state.vehicles)
 					kidState.remove(v)
 					newCarPosition = Vehicle(v.no, v.orientation, v.x, v.y-1, v.size)
 					kidState.insert(v.no, newCarPosition)
-					kid = Node(kidState, self)
+					kid = Node(State(kidState), self)
 					children.append(kid)
-				if (self.state.isAvailable(v.x, v.y+size)):
-					kidState = self.state.vehicles
+				if (self.state.isAvailable(v.x, v.y+v.size)):
+					kidState = list(self.state.vehicles)
 					kidState.remove(v)
 					newCarPosition = Vehicle(v.no, v.orientation, v.x, v.y+1, v.size)
 					kidState.insert(v.no, newCarPosition)
-					kid = Node(kidState, self)
+					kid = Node(State(kidState), self)
 					children.append(kid)
 		return children
 
 
 	def check_Solution(self):
-		return (((self.state.vechicles[0].x + self.state.vechicles[0].size - 1) == 5) and (self.state.vechicles[0].y == 2))
+		return (((self.state.vehicles[0].x + self.state.vehicles[0].size - 1) == 5) and (self.state.vehicles[0].y == 2))
 
-	def cost(a,b):
+	def cost(self, a,b):
 		return 1
 
 
@@ -72,18 +85,20 @@ class State(object):
 	def __init__(self, vehicles):
 	    self.vehicles = vehicles
 
-	def hashID(self):
-		hashID = 0
-		for v in vehicles:
-			hashID += (3*v.no + 13*v.x + 17*v.y + 107*size) #Is this really a good hash??
+	def getID(self):
+		return hash(self)
 
-	def isAvailable(x,y):
+	def isAvailable(self, x, y):
+		if x < 0 or x > 5:
+			return False
+		if y < 0 or y > 5:
+			return False
 		for v in self.vehicles:
-			if v.orientation = 0:
-				if (v.y = y) and (x in range(v.x, v.x+size)):
+			if v.orientation == 0:
+				if (v.y == y) and (x in range(v.x, v.x+v.size)):
 					return False
-			elif v.orientation = 1:
-				if (v.x = x) and (y in range(v.y, v.y+size)):
+			elif v.orientation == 1:
+				if (v.x == x) and (y in range(v.y, v.y+v.size)):
 					return False
 			return True
 
@@ -98,3 +113,9 @@ class Vehicle(object):
 	    self.x = x
 	    self.y = y
 	    self.size = size
+
+	def __repr__(self):
+		s = ""
+		s+= "(" + str(self.no) + "," + str(self.orientation) + "," + str(self.x) + "," + str(self.y) + "," +  str(self.size) + "), "
+		return s
+

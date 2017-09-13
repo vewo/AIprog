@@ -6,19 +6,22 @@ from Node import Vehicle
 
 class A_star_search(object):
 
+
+
 	def a_star_search(self, start):
 		closed = []
 		open_nodes = []
 		frontier = PriorityQueue() #Nodes
 		created = {} #(hashID, nodes)
 
-		frontier.put((0+start.heuristic(), start)) #g(S0)=0
+		start.priority = 0 + start.heuristic()
+		frontier.put(start) #g(S0)=0
 		open_nodes.append(start)
 
 		while True:
 			if frontier.empty():
 				return False
-			x = frontier.get()[1]
+			x = frontier.get()
 			closed.append(x)
 			if x.check_Solution():
 				return x
@@ -31,9 +34,10 @@ class A_star_search(object):
 				x.kids.append(c)
 				if not ((c in closed) or (c in open_nodes)):
 					f = int(self.attach_and_eval(c,x))
-					frontier.put((int(f), c))
+					c.priority = int(f)
+					frontier.put(c)
 					open_nodes.append(c)
-				elif x.g_value + x.cost(x,c) < c.g_value():
+				if x.g_value + x.cost(x,c) < c.g_value():
 					self.attach_and_eval(c,x)
 					if c in open_nodes:
 						open_nodes_temp = []

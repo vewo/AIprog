@@ -6,11 +6,15 @@ class Node(object):
 	f_value = g_value + h_value
 	parent = None
 	kids = []
+	priority = 0
 
 	def __init__(self, state, parent):
 		self.state = state
 		self.parent = parent
 		self.walls = [(4,3),(4,4)]
+
+	def __cmp__(self, other):
+		return cmp(self.priority, other.priority)
 
 	def __repr__(self):
 		s = ""
@@ -118,4 +122,3 @@ class Vehicle(object):
 		s = ""
 		s+= "(" + str(self.no) + "," + str(self.orientation) + "," + str(self.x) + "," + str(self.y) + "," +  str(self.size) + "), "
 		return s
-

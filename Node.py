@@ -13,8 +13,8 @@ class Node(object):
 		self.parent = parent
 		self.walls = [(4,3),(4,4)]
 
-	def __cmp__(self, other):
-		return cmp(self.priority, other.priority)
+	def __lt__(self, other):
+		return ((self.priority) < (other.priority))
 
 	def __repr__(self):
 		s = ""

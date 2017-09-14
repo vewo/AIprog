@@ -37,7 +37,7 @@ class A_star_search(object):
 					c.priority = int(f)
 					frontier.put(c)
 					open_nodes.append(c)
-				if x.g_value + x.cost(x,c) < c.g_value():
+				if x.g_value + x.cost(x,c) < c.g_value:
 					self.attach_and_eval(c,x)
 					if c in open_nodes:
 						open_nodes_temp = []

@@ -40,17 +40,16 @@ class Solver(object):
         return startNode
 
     def findPath(self, goal):
-        path = []
-        path.append(goal.getID)
+        self.path.append(goal.parent)
         if (goal.parent != None):
-            findPath(goal.parent)
-        return(path)
+            self.findPath(goal.parent)
 
 s = Solver("easy.txt")
 v = s.generateStartNode()
-a = A_star_search()
-g = a.a_star_search(v)
-#print(g)
-#print(s.findPath(g))
+a = A_star_search(v)
+print(a.a_star_search())
+#s.findPath(g)
+#print(len(s.path))
+#print(s.path)
 
 

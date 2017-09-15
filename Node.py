@@ -6,11 +6,15 @@ class Node(object):
 	f_value = g_value + h_value
 	parent = None
 	kids = []
+	priority = 0
 
 	def __init__(self, state, parent):
 		self.state = state
 		self.parent = parent
 		self.walls = [(4,3),(4,4)]
+
+	def __lt__(self, other):
+		return ((self.priority) < (other.priority))
 
 	def __repr__(self):
 		s = ""
@@ -29,16 +33,18 @@ class Node(object):
 				if (2 in range(v.y, v.y+v.size)):
 					blocking += 1
 		goalDistance = 4-v0.x
-		return goalDistance+blocking
+		return 0.5*goalDistance+0.5*blocking
 
 	def getID(self):
 		return self.state.getID()
 
 	def generateChildren(self):
 		children = []
+		i = 0
 		for v in self.state.vehicles:
+			i+=1
 			if v.orientation == 0:
-				if self.state.isAvailable(v.x-1,v.y):
+				if (self.state.isAvailable(v.x-1,v.y)):
 					kidState = list(self.state.vehicles)
 					kidState.remove(v)
 					newCarPosition = Vehicle(v.no, v.orientation, v.x-1, v.y, v.size)
@@ -73,7 +79,7 @@ class Node(object):
 	def check_Solution(self):
 		return (((self.state.vehicles[0].x + self.state.vehicles[0].size - 1) == 5) and (self.state.vehicles[0].y == 2))
 
-	def cost(self, a,b):
+	def cost(self, b):
 		return 1
 
 
@@ -81,12 +87,16 @@ class Node(object):
 class State(object):
 
 	vehicles = []
+	s = ""
+
 
 	def __init__(self, vehicles):
 	    self.vehicles = vehicles
+	    for v in vehicles:
+	    	self.s += str(v.no) + str(v.orientation) + str(v.x) + str(v.y) + str(v.size)
 
 	def getID(self):
-		return hash(self)
+		return hash(self.s)
 
 	def isAvailable(self, x, y):
 		if x < 0 or x > 5:
@@ -100,7 +110,7 @@ class State(object):
 			elif v.orientation == 1:
 				if (v.x == x) and (y in range(v.y, v.y+v.size)):
 					return False
-			return True
+		return True
 
 
 
@@ -118,4 +128,3 @@ class Vehicle(object):
 		s = ""
 		s+= "(" + str(self.no) + "," + str(self.orientation) + "," + str(self.x) + "," + str(self.y) + "," +  str(self.size) + "), "
 		return s
-

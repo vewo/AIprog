@@ -64,21 +64,12 @@ class A_star():
                     self.put(child)
                 elif existing:
                     old = self.frontier[existing]
-                    if child.f_value < old.f_value: #Means one has found a cheaper way to get to the same state, as the heuristic will be equal
-                        print("happens")
+                    if child.g_value < old.g_value: #Means one has found a cheaper way to get to the same state, as the heuristic will be equal
                         self.remove(existing)
                         self.put(child)
 
         return False
 
-    def propagate_path_improvements(self, a):
-        for c in a.kids:
-            if a.g_value + a.cost(c) < c.g_value:
-                c.parent = a
-                c.g_value = a.g_value + a.cost(c)
-                c.f_value = c.g_value + a.heuristic()
-
-                propagate_path_improvements(c)
 
 
 class Node():

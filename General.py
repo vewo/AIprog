@@ -1,7 +1,3 @@
-from queue import PriorityQueue
-import time
-import copy
-import math
 
 class Node():
     def __init__(self, state, parent):
@@ -46,7 +42,7 @@ class State():
     def getID(self): #unique identifier for the state
         pass
 
-    def getState(self): #represent state in format easy for visualization and computation
+    def getGrid(self): #represent state in format easy for visualization and computation
         pass
 
     def generateStates(self): #generate the possible states that can 

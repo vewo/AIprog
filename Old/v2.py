@@ -89,7 +89,7 @@ class Node():
         while node:
             path.append(node)
             node = node.parent
-        return path
+        return path.reverse()
     
     def isSolution(self):
         pass

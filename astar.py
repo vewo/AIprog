@@ -1,83 +1,122 @@
 from queue import PriorityQueue
+import time
+import copy
 import math
-import Node
-from Node import State
-from Node import Vehicle
 
-class A_star_search:
 
-	def __init__(self, start):
-		self.start = start
-		self.frontier = PriorityQueue() #Nodes
-		self.open_nodes = []
-		self.open_values = []
-		self.closed = set()
-		self.count = 0
-		self.created = {} #(hashID, nodes) ##BRUKES IKKE
 
-	def checkState(self, node):
-		for i in range(0,len(self.open_nodes)):
-			if self.open_nodes[i].getID() == node.getID():
-				return True
-		return False		
-		
+class A_star():
+    
+    def __init__(self, start, nodemode):
+        self.start = start #sets the start state
+        self.frontier_f_values = [] # the f values of the nodes in frontier, on same index as the respective node
+        self.frontier = [] # the open nodes
+        self.closed = set() # closed nodes, should not allow for duplicates
+        self.explored = 0 #to measure the no of nodes the search explores
+        self.generated = 0 #to measure the no of nodes the search generates
+        self.nodemode = nodemode # to generalize to different kinds of problems
+    
+    def existingState(self, state):
+        dict = {}
+        for i in range(len(self.frontier)): #Make dictionary of generated states and their respective nodes' index in frontier
+            dict[self.frontier[i].state.ID] = i 
+        if state.ID in dict:
+            return dict.get(state.ID) #returns index (in frontier) of potentially created node
+        return False
 
-	def a_star_search(self):
+    #Functions for managing the lists of open nodes and their respective f_values   
+    def put(self, node):
+        self.frontier_f_values.append(node.f_value)
+        self.frontier.append(node)
+    
+    def get(self):
+        lowest = self.frontier_f_values.index(min(self.frontier_f_values)) #Find smallest f_value of open nodes
+        best_option = self.frontier[lowest]
+        del self.frontier_f_values[lowest]
+        del self.frontier[lowest]
+        return best_option
+    
+    def remove(self, node_index):
+        del self.frontier_f_values[node_index]
+        del self.frontier[node_index]
+        
+    def a_star_search(self):
+        #Make first start state into problem specific node
+        first = self.nodemode(self.start, 0)
+        self.generated += 1
+        self.put(first)
+        
+        #as long as frontier is not empty
+        while(self.frontier):
+            x = self.get()
+            self.explored += 1
+            self.closed.add(x.state.ID)
+            
+            if(x.isSolution()): #check if x is solution
+                return x, self.generated, self.explored
+            
+            childNodes = x.createChildren()
+            self.generated += len(childNodes)
 
-		if self.start.check_Solution():
-			return self.start, count	
+            for child in childNodes: #list of child-nodes
+                existing = self.existingState(child.state) #check if node with same state is in frontier, if so returns it's index in the frontier
+                if child.state.ID not in self.closed and not existing:
+                    self.put(child)
+                elif existing:
+                    old = self.frontier[existing]
+                    if child.g_value < old.g_value: #Means one has found a cheaper way to get to the same state, as the heuristic will be equal
+                        self.remove(existing)
+                        self.put(child)
 
-		self.start.priority = 0 + self.start.heuristic()
-		self.start.f_value = 0 + self.start.heuristic()
-		self.frontier.put(self.start)
-		self.open_nodes.append(self.start)
-		self.created[self.start.getID()] = self.start
+        return False
 
-		while True:
-			if self.frontier.empty():
-				return False
-			x = self.frontier.get()
-			self.closed.add(x.getID())
-			self.open_nodes.remove(x)
-			#counting numbers of nodes considered
-			self.count += 1
-			if x.check_Solution():
-				return x, count
-			children = x.generateChildren()
-			for c in children:
-				print(self.count)
-				print(c)
-				#if c.getID() in self.created:
-				#	c = self.created.get(c.getID())
-				x.kids.append(c)
-				if ((c.getID() not in self.closed) and (not self.checkState(c))):
-					f = int(self.attach_and_eval(c,x))
-					self.frontier.put(c)
-					self.open_nodes.append(c)
-				elif x.g_value + x.cost(c) < c.g_value:
-					self.attach_and_eval(c,x)
-					if c in self.open_nodes:
-						sopen_nodes_temp = []
-						for i in range(len(self.open_nodes)):
-							open_nodes_temp.append(self.frontier.get())
-						for i in range(len(open_nodes_temp)):
-							open_nodes_temp[i].priority = open_nodes_temp[i].f_value
-							self.frontier.put(open_nodes_temp[i])
-					elif c in self.closed:
-						self.propagate_path_improvements(c)
 
-	def attach_and_eval(self, a,b):
-		a.parent = b
-		a.g_value = b.g_value + b.cost(a)
-		a.f_value = a.g_value + a.heuristic()
-		a.priority = int(a.f_value)
-		return a.f_value
 
-	def propagate_path_improvements(self, a):
-		for c in a.kids:
-			if a.g_value + a.cost(c) < c.g_value:
-				c.parent = a
-				c.g_value = a.g_value + a.cost(c)
-				c.f_value = c.g_value + a.heuristic()
+class Node():
+    def __init__(self, state, parent):
+        self.state = state
+        self.parent = parent
+        self.g_value = 0
+        if parent != 0:
+            self.g_value = self.parent.g_value + self.cost(parent)
+        self.h_value = self.heuristic()
+        self.f_value = self.h_value + self.g_value
+        self.kids = []
+    
+    def path(self): #Returns the path from the node to goal
+        path = []
+        node = self
+        while node:
+            path.append(node)
+            node = node.parent
+        return path.reverse()
+    
+    def isSolution(self):
+        pass
 
-				propagate_path_improvements(c)
+    def cost(self, parent):
+        pass
+    
+    def heuristic(self):
+        pass
+    
+    def createChildren(self):
+        pass
+    
+    
+class State():
+    def __init__(self, state):
+        self.state = self.initialize(state)
+        self.ID = self.getID()
+        
+    def initialize(self, state):
+        pass
+    
+    def getID(self): #unique identifier for the state
+        pass
+
+    def getState(self): #represent state in format easy for visualization and computation
+        pass
+
+    def generateStates(self): #generate the possible states that can 
+        pass

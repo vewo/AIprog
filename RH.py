@@ -2,9 +2,9 @@ import time
 import math
 import copy
 
-from v2 import A_star
-from v2 import Node
-from v2 import State
+from AStar import A_star
+from General import Node
+from General import State
 
 
 

@@ -35,8 +35,8 @@ class Node():
 class State():
     def __init__(self, state):
         self.state = self.initialize(state)
-        print(self.state[0][0].segmentSizes)
-        #self.ID = self.getID()
+        #print(self.state[0][0].segmentSizes)
+        self.ID = self.getID()
         
     def initialize(self, state):
         pass

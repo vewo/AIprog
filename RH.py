@@ -1,7 +1,7 @@
 import math
 import copy
 
-from AStar import A_star
+from astar import A_star
 from General import Node
 from General import State
 

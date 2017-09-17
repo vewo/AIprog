@@ -1,10 +1,9 @@
-import time
 import math
 import copy
 
-from v2 import A_star
-from v2 import Node
-from v2 import State
+from AStar import A_star
+from General import Node
+from General import State
 
 
 
@@ -16,7 +15,7 @@ class RHNode(Node):
         return 1
     
     def heuristic(self):
-        grid = self.state.getState() #get the grid
+        grid = self.state.getGrid() #get the grid
         target_car = self.state.state[0]
         no_blocks = 0
         goal_distance = 4 - target_car.x #the location of leftmost corner for car when in goal == 4
@@ -29,10 +28,10 @@ class RHNode(Node):
         return self.state.state[0].x == 4 #Check if leftmost corner of size 2 target car is in col 4 -> righmost corner in col 5 == goal
 
     def createChildren(self):
-        possible_states = self.state.generateStates()
+        feasible_states = self.state.generateStates()
         children = []
-        for possible_state in possible_states:
-            children.append(RHNode(possible_state, self))
+        for feasible_state in feasible_states:
+            children.append(RHNode(feasible_state, self))
         return children
 
 class RHState(State):
@@ -48,11 +47,11 @@ class RHState(State):
         return vehicles
     
     def getID(self): #unique identifier for the state
-        return hash(''.join(str(e) for e in self.getState()))
+        return hash(''.join(str(e) for e in self.getGrid()))
     
-    def getState(self):
+    def getGrid(self):
         grid = [["x" for column in range(6)] for row in range(6)]
-        for v in self.state: #adding vehicles to the board
+        for v in self.state: #adding vehicles to the grid
             if v.orientation == 0:   #horizontal
                 for x in range(v.size):
                     grid[v.x + x][v.y] = v.no
@@ -61,50 +60,49 @@ class RHState(State):
                     grid[v.x][v.y + y] = v.no
         return grid
 
-    def createStateObject(self, vehicles):
+    def makeState(self, vehicles):
         state = []
         for v in vehicles:
-            state.append(v.toTuple())
-            new_state = RHState(state)
+            state.append(v.getTuple())
+        new_state = RHState(state)
         return new_state
           
     def generateStates(self): 
-        board = self.getState()
-        possible_states = []
+        grid = self.getGrid()
+        feasible_states = []
         
         for v in self.state:
-            #Horizontal orientation of vehicle
-            if v.orientation == 0:
-                left_most = v.getLocation()[0]
-                right_most = v.getLocation()[-1]
+            if v.orientation == 0: #horizontal orientation
+                left = v.x #x-coordinate of leftmost part of the vehicle
+                right = v.x+v.size-1 #x-coordinate of rightmost part of the vehicle
+                y = v.y #y-coordinate of the vehicle
                        
-                if(left_most[0] != 0 and board[left_most[0] - 1][left_most[1]] == "x"):        
-                    temp_vehicles = copy.deepcopy(self.state) #temp list for vehicles to generate states from
-                    temp_vehicles[v.no].x -= 1
-                    possible_states.append(self.createStateObject(temp_vehicles))
+                if(left != 0 and grid[left - 1][y] == "x"): #the vehicle can move to the left       
+                    vehicles = copy.deepcopy(self.state) #list of vehicles to be used to generate states
+                    vehicles[v.no].x -= 1
+                    feasible_states.append(self.makeState(vehicles))
             
-                if(right_most[0] != 5 and board[right_most[0] + 1][right_most[1]] == "x"):
-                    temp_vehicles = copy.deepcopy(self.state) #temp list for vehicles to generate states from
-                    temp_vehicles[v.no].x += 1
-                    possible_states.append(self.createStateObject(temp_vehicles))
+                if(right != 5 and grid[right + 1][y] == "x"): #the vehicle can move to the right
+                    vehicles = copy.deepcopy(self.state) #list of vehicles to be used to generate states
+                    vehicles[v.no].x += 1
+                    feasible_states.append(self.makeState(vehicles))
+
+            else: #vertical orientation
+                top = v.y #y-coordinate of top part of the vehicle
+                bottom = v.y+v.size-1 #y-coordinate of bottom part of the vehicle
+                x = v.x #x-coordinate of the vehicle
+
+                if(top != 0 and grid[x][top - 1] == "x"): #the vehicle can move up
+                    vehicles = copy.deepcopy(self.state) #list of vehicles to be used to generate states
+                    vehicles[v.no].y -= 1
+                    feasible_states.append(self.makeState(vehicles))
                 
-            #Vertical orientation of vehicle
-            else:
-                top = v.getLocation()[0]
-                bottom = v.getLocation()[-1]
+                if(bottom != 5 and grid[x][bottom + 1] == "x"): #the vehicle can move down
+                    vehicles = copy.deepcopy(self.state) #list of vehicles to be used to generate states
+                    vehicles[v.no].y += 1
+                    feasible_states.append(self.makeState(vehicles))
 
-                if(top[1] != 0 and board[top[0]][top[1] - 1] == "x"):
-                    temp_vehicles = copy.deepcopy(self.state) #temp list for vehicles to generate states from
-                    temp_vehicles[v.no].y -= 1
-
-                    possible_states.append(self.createStateObject(temp_vehicles))
-                
-                if(bottom[1] != 5 and board[bottom[0]][bottom[1] + 1] == "x"):
-                    temp_vehicles = copy.deepcopy(self.state) #temp list for vehicles to generate states from
-                    temp_vehicles[v.no].y += 1
-
-                    possible_states.append(self.createStateObject(temp_vehicles))
-        return possible_states
+        return feasible_states
 
 class Vehicle():
     def __init__(self, no, orientation, x, y, size):
@@ -114,55 +112,47 @@ class Vehicle():
         self.y = y
         self.size = size
     
-    #Return the location of the vehicle (tuples with (x and y coordinates))
-    def getLocation(self):
-        location = []
-        #Horizontal orientation of vehicle
-        if self.orientation == 0:
-            for i in range(self.size):
-                location.append((self.x + i, self.y))
-        #Vertical orientation of vehicle
-        if self.orientation == 1:
-            for i in range(self.size):
-                location.append((self.x, self.y + i))
-        return location
-    
-    def toTuple(self):
+    def getTuple(self):
         return (self.orientation, self.x, self.y, self.size)
 
 class Solver():
 
     def __init__(self, level):
-        if level == easy:
-            first_node = A_star(RHState(easy), RHNode)
-        if level == medium:
-            first_node = A_star(RHState(medium), RHNode)
-        if level == hard:
-            first_node = A_star(RHState(hard), RHNode)
-        if level == expert:
-            first_node = A_star(RHState(expert), RHNode)
-        if level.split('.')[1] == "txt":
-            first_node = A_star(RHState(makeNewLevel(level)), RHNode)
+        if level == "easy":
+            self.first_node = A_star(RHState(self.easy), RHNode)
+        elif level == "medium":
+            self.first_node = A_star(RHState(self.medium), RHNode)
+        elif level == "hard":
+            self.first_node = A_star(RHState(self.hard), RHNode)
+        elif level == "expert":
+            self.first_node = A_star(RHState(self.expert), RHNode)
+        elif level.split('.')[1] == "txt":
+            lvl = self.makeNewLevel(level)
+            self.first_node = A_star(RHState(lvl), RHNode)
+        else:
+            print("unsupported input, give either a predefined level or a textfile as an argument")
 
     def makeNewLevel(self, level):
-        level = []
+        result = []
         with open(level) as infile:
-            self.level = ['(', line, ')'] for line in infile]
+            for line in infile:
+                result.append(tuple(map(int, line.split(','))))
+        return result
 
+    def solve(self):
+        node, generated, explored = self.first_node.a_star_search()
+        return node, generated, explored
 
-
-
-easy = [
-        (0,2,2,2),
-        (0,0,4,3),
-        (0,3,4,2),
-        (0,4,1,2),
-        (1,2,0,2),
-        (1,4,2,2)]
-
-
+    #Levels given in advance
+    easy = [
+            (0,2,2,2),
+            (0,0,4,3),
+            (0,3,4,2),
+            (0,4,1,2),
+            (1,2,0,2),
+            (1,4,2,2)]
  
-medium = [
+    medium = [
             (0,1,2,2),
             (0,0,5,3),
             (0,1,3,2),
@@ -175,65 +165,74 @@ medium = [
             (1,5,0,2),
             (1,5,2,2)]
 
-hard = [
-    (0,2,2,2),
-    (0,0,4,2),
-    (0,0,5,2),
-    (0,2,5,2),
-    (0,4,0,2),
-    (1,0,0,3),
-    (1,1,1,3),
-    (1,2,0,2),
-    (1,3,0,2),
-    (1,4,2,2),
-    (1,4,4,2),
-    (1,5,3,3)]
+    hard = [
+            (0,2,2,2),
+            (0,0,4,2),
+            (0,0,5,2),
+            (0,2,5,2),
+            (0,4,0,2),
+            (1,0,0,3),
+            (1,1,1,3),
+            (1,2,0,2),
+            (1,3,0,2),
+            (1,4,2,2),
+            (1,4,4,2),
+            (1,5,3,3)]
 
-expert = [
-    (0,0,2,2),
-    (0,0,1,3),
-    (0,0,5,2),
-    (0,1,0,2),
-    (0,2,3,2),
-    (0,3,4,2),
-    (1,0,3,2),
-    (1,2,4,2),
-    (1,3,0,3),
-    (1,4,0,2),
-    (1,4,2,2),
-    (1,5,2,2),
-    (1,5,4,2)]
-
-start_time = time.clock()
+    expert = [
+            (0,0,2,2),
+            (0,0,1,3),
+            (0,0,5,2),
+            (0,1,0,2),
+            (0,2,3,2),
+            (0,3,4,2),
+            (1,0,3,2),
+            (1,2,4,2),
+            (1,3,0,3),
+            (1,4,0,2),
+            (1,4,2,2),
+            (1,5,2,2),
+            (1,5,4,2)]
 
 
-print("Solving easy")
-first_node = A_star(RHState(easy), RHNode)
-node, generated, explored = first_node.a_star_search()
-print("Number of steps:", node.g_value, "Number of nodes considered:", explored, "Number of nodes generated:", generated)
+s = Solver("hard")
+node, generated, explored = s.solve()
+print(node.g_value)
+print(explored)
+print(generated)
 
-print(time.clock() - start_time, "seconds")
-start_time = time.clock()
 
-print("Solving medium")
-first_node = A_star(RHState(easy), RHNode)
-node, generated, explored = first_node.a_star_search()
-print("Number of steps:", node.g_value, "Number of nodes considered:", explored, "Number of nodes generated:", generated)
+'''
+    start_time = time.clock()
 
-print(time.clock() - start_time, "seconds")
-start_time = time.clock()
+    print("Solving easy")
+    first_node = A_star(RHState(easy), RHNode)
+    node, generated, explored = first_node.a_star_search()
+    print("Number of steps:", node.g_value, "Number of nodes considered:", explored, "Number of nodes generated:", generated)
 
-print("Solving hard")
-first_node = A_star(RHState(easy), RHNode)
-node, generated, explored = first_node.a_star_search()
-print("Number of steps:", node.g_value, "Number of nodes considered:", explored, "Number of nodes generated:", generated)
+    print(time.clock() - start_time, "seconds")
+    start_time = time.clock()
 
-print(time.clock() - start_time, "seconds")
-start_time = time.clock()
+    print("Solving medium")
+    first_node = A_star(RHState(medium), RHNode)
+    node, generated, explored = first_node.a_star_search()
+    print("Number of steps:", node.g_value, "Number of nodes considered:", explored, "Number of nodes generated:", generated)
 
-print("Solving expert")
-first_node = A_star(RHState(easy), RHNode)
-node, generated, explored = first_node.a_star_search()
-print("Number of steps:", node.g_value, "Number of nodes considered:", explored, "Number of nodes generated:", generated)
+    print(time.clock() - start_time, "seconds")
+    start_time = time.clock()
 
-print(time.clock() - start_time, "seconds")
+    print("Solving hard")
+    first_node = A_star(RHState(hard), RHNode)
+    node, generated, explored = first_node.a_star_search()
+    print("Number of steps:", node.g_value, "Number of nodes considered:", explored, "Number of nodes generated:", generated)
+
+    print(time.clock() - start_time, "seconds")
+    start_time = time.clock()
+
+    print("Solving expert")
+    first_node = A_star(RHState(expert), RHNode)
+    node, generated, explored = first_node.a_star_search()
+    print("Number of steps:", node.g_value, "Number of nodes considered:", explored, "Number of nodes generated:", generated)
+
+    print(time.clock() - start_time, "seconds")
+'''

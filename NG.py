@@ -11,8 +11,15 @@ class NGState(State):
 	def __init__(self, state):
 		super(NGState, self).__init__(state)
 
+
 	def initialize(self, state):
-		pass
+		rows = []
+		columns = []
+		for i in range(len(state[0])):
+			rows.append(Variable(0, state[0][i], len(state[0])))
+
+		for i in range(len(state[1])):
+			columns.append(Variable(1, state[1][i], len(state[1])))
 
 	def getID(self):
 		pass
@@ -20,7 +27,7 @@ class NGState(State):
 
 
 class Variable():
-	def __init(self, type, segmentSizes, domain, varLength):
+	def __init(self, type, segmentSizes, varLength):
 		self.type = type
 		self.segmentSizes = segmentSizes
 		self.domain = get_permutations(self, segmentSizes, varLength)
@@ -60,7 +67,40 @@ class Variable():
 
 
 class Solver():
+	def __init__(self, board):
+		if board == "cat":
+			self.first_node = A_star_GAC(NGState(self.cat), NGNode)
+		elif level.split('.')[1] == "txt":
+			brd = self.makeNewBoard(board)
+            self.first_node = A_star_GAC(NGState(brd), NGNode)
+        else:
+            print("unsupported input, give either a predefined level or a textfile as an argument")
 
+    def makeNewBoard(self, board):
+        rows = []
+        columns = []
+        with open(level) as infile:
+        	firstLine = infile.readline().split(' ')
+        	noCols = int(firstLine[0])
+        	noRows = int(firstLine[1])
+        	for i in range(noRows):
+        		rowLine = infile.readline().strip("\n").split(" ")
+        		row = []
+        		for ss in rowLine: 
+        			row.append(int(ss))
+        		rows.append(row)
+        	for i in range(noCols):
+        		colLine = infile.readline().strip("\n").split(" ")
+        		col = []
+        		for ss in colLine: 
+        			col.append(int(ss))
+        		columns.append(col)
+        return [rows, columns]
+
+
+
+    def solve(self):
+    	pass
 
 	cat = 
 			[[8, 9],
@@ -82,7 +122,5 @@ class Solver():
 			[3],
 			[3]]
 
-
-
-
+s = Solver(cat)
 

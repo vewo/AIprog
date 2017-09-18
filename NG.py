@@ -3,7 +3,7 @@ import copy
 
 
 class NGNode(Node):
-	def __init__(self, state, parente):
+	def __init__(self, state, parent):
 		super(NGNode, self).__init__(state, parent)
 
 
@@ -68,11 +68,13 @@ class Variable():
 
 class Solver():
 	def __init__(self, board):
-		if board.split('.')[1] == "txt":
-			brd = self.makeNewBoard(board)
-			self.first_node = NGState(brd) #Setting state
-		else:
-			print("unsupported input, give either a predefined level or a textfile as an argument")
+		self.brd = self.makeNewBoard(board)
+		self.first_node = NGState(self.brd)
+		#if board.split('.')[1] == "txt":
+		#	self.brd = self.makeNewBoard(board)
+		#	self.first_node = NGState(brd) #Setting state
+		#else:
+		#	print("unsupported input, give either a predefined level or a textfile as an argument")
 
 	def makeNewBoard(self, board):
 	    rows = []
@@ -102,6 +104,9 @@ class Solver():
 
 
 s = Solver("cat.txt")
-print(s)
+state = s.first_node
+print(state.state[0][0].domain)
+
+#print(s.brd[0])
 
 

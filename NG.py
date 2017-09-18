@@ -8,8 +8,8 @@ class NGNode(Node):
 
 
 class NGState(State):
-	def __init__(self, state):
-		super(NGState, self).__init__(state)
+	def __init__(self, board):
+		super(NGState, self).__init__(board)
 
 
 	def initialize(self, state):
@@ -18,8 +18,19 @@ class NGState(State):
 		for i in range(len(state[0])):
 			rows.append(Variable(0, state[0][i], len(state[1])))
 		for i in range(len(state[1])):
-			columns.append(Variable(1, state[1][i], len(state[0])))
+			segmentSizes = copy.deepcopy(state[1][i])
+			segmentSizes.reverse()
+			columns.append(Variable(1, segmentSizes, len(state[0])))
 		return [rows, columns]
+
+	def getState(self):
+		domainSize = 0
+		for row in self.state[0]:
+			domainSize += len(row.domain)
+		for col in self.state[1]:
+			domainSize += len(col.domain)
+		return(domainSize)
+
 
 	def getID(self):
 		pass
@@ -104,64 +115,110 @@ class Solver():
 		pass
 
 
-s = Solver("cat.txt")
-f = s.first_node
+def getRowDomain(state):
+	rowDomain = []
+	for i in range(len(state[0])):
+		rowDomain.append((state[0][i].domain))
+		#rowDomain += (state[0][i].domain)
+	return rowDomain
+	
 
-rowDomain = []
-for i in range(len(f.state[0])):
-	rowDomain += (f.state[0][i].domain)
-columnDomain = []
-for i in range(len(f.state[1])):
+def getColDomain(state):
+	columnDomain = []
+	for i in range(len(state[1])):
+		columnDomain.append(state[1][i].domain)
+		#columnDomain += (state[1][i].domain)
+	return columnDomain
 
-	columnDomain += (f.state[1][i].domain)
 
 
+
+
+def getFixedRows(state):
 #ROWS
-fixedPointsRow = []
-for rowNo in range(len(f.state[0])):
-	domain = f.state[0][rowNo].domain #Get domain for variable
-	fillRate = []
-	fillRate = [0]*(f.state[0][rowNo].varLength)
-	#number of true in each index
-	for permutation in domain:
-		for index in range(len(permutation)):
-			if permutation[index] == True:
-				fillRate[index] += 1
-	for index in range(len(fillRate)):
-		if fillRate[index] == len(domain):
-			fixedPointsRow.append((rowNo, index, 1))
-		if fillRate[index] == len(domain):
-			fixedPointsRow.append((rowNo, index, 1))
-print(fixedPointsRow)
-#COLUMNS
-fixedPointsColumn = []
-for columnNo in range(len(f.state[1])):
-	domain = f.state[1][columnNo].domain #Get domain for variable
-	fillRate = []
-	fillRate = [0]*(f.state[1][columnNo].varLength)
-	#number of true in each index
-	for permutation in domain:
-		for index in range(len(permutation)):
-			if permutation[index] == True:
-				fillRate[index] += 1
-	for index in range(len(fillRate)):
-		if fillRate[index] == len(domain):
-			fixedPointsColumn.append((index, columnNo, 1))
-print(fixedPointsColumn)
+	fixedPointsRow = []
+	for rowNo in range(len(state[0])):
+		domain = state[0][rowNo].domain #Get domain for row
+		fillRate = [0]*(state[0][rowNo].varLength)
+		#number of true in each index
+		for permutation in domain:
+			for index in range(len(permutation)):
+				if permutation[index] == True:
+					fillRate[index] += 1
+		for index in range(len(fillRate)):
+			if fillRate[index] == len(domain):
+				fixedPointsRow.append((rowNo, index, 1))
+			if fillRate[index] == 0:
+				fixedPointsRow.append((rowNo, index, 0))
+	return fixedPointsRow
+	
 
+def getFixedColumns(state):
+	fixedPointsColumn = []
+	for columnNo in range(len(state[1])):
+		domain = state[1][columnNo].domain #Get domain for column
+		fillRate = [0]*(state[1][columnNo].varLength)
+		#number of true in each index
+		for permutation in domain:
+			for index in range(len(permutation)):
+				if permutation[index] == True:
+					fillRate[index] += 1
+		for index in range(len(fillRate)):
+			if fillRate[index] == len(domain):
+				fixedPointsColumn.append((index, columnNo, 1))
+			if fillRate[index] == 0:
+				fixedPointsColumn.append((index, columnNo, 0))
+	return fixedPointsColumn
+	
 
-#print(columnDomain)
+def domainFiltering(fixedPoints, domain, mode):
+	
+	changed = False
 
-var = f.state[0][0].domain # [kolonne/rad] [index]
+	if mode == "rowCheck":
+		for fixedPoint in fixedPoints:
+			toBeDeleted = []
+			yOfFixedPoint = fixedPoint[0] #Row number of fixed point
+			xOfFixedPoint = fixedPoint[1] #Index of fixed point
+			permutations = domain[yOfFixedPoint] #Permutations of the row of interest
+			for permutation in permutations:
+				if permutation[xOfFixedPoint] != fixedPoint[2]:
+					toBeDeleted.append(permutation)
+					changed = True
+			for delete in toBeDeleted:
+				domain[yOfFixedPoint].remove(delete)
+	elif mode == "colCheck":
+		for fixedPoint in fixedPoints:
+			toBeDeleted = []
+			yOfFixedPoint = fixedPoint[0] #Column number of fixed point
+			xOfFixedPoint = fixedPoint[1] #Index of fixed point
+			permutations = domain[xOfFixedPoint] #Permutations on index from fixedpoint
+			for permutation in permutations:
+				if permutation[yOfFixedPoint] != fixedPoint[2]:
+					toBeDeleted.append(permutation)
+					changed = True
+			for delete in toBeDeleted:
+				domain[xOfFixedPoint].remove(delete)
+	return changed
 
-indexList = []
-indexList = [0]*len(rowDomain[0])
-#number of true in each index
-for i in var:
-	for j in range(len(i)):
-		if i[j] == True:
-			indexList[j] += 1
+def revise(NGstate):
+	domainFiltering(getFixedColumns(NGstate.state), getRowDomain(NGstate.state), "rowCheck")
+	domainFiltering(getFixedRows(NGstate.state), getColDomain(NGstate.state), "colCheck")
+	changed = True
+	while True: 
+		changed = domainFiltering(getFixedColumns(NGstate.state), getRowDomain(NGstate.state), "rowCheck")
+		if changed == False: 
+			break
+		changed = domainFiltering(getFixedRows(NGstate.state), getColDomain(NGstate.state), "colCheck")
+		if changed == False: 
+			break
+	print("solution", NGstate.getState())
+	return NGstate.getState()
 
+s = Solver("chick.txt")
+NGState = s.first_node
+revise(NGState)
 
-
+#var = Variable(0, [1], 10)
+#print(len(var.get_permutations([50],50)))
 

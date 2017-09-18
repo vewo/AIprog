@@ -25,11 +25,15 @@ class NGState(State):
 
 	def getState(self):
 		domainSize = 0
+		rowSize = 0
+		columnSize = 0
 		for row in self.state[0]:
 			domainSize += len(row.domain)
+			rowSize += len(row.domain)
 		for col in self.state[1]:
 			domainSize += len(col.domain)
-		return(domainSize)
+			columnSize += len(col.domain)
+		return [domainSize, rowSize, columnSize]
 
 
 	def getID(self):
@@ -171,7 +175,7 @@ def getFixedColumns(state):
 	return fixedPointsColumn
 	
 
-def domainFiltering(fixedPoints, domain, mode):
+def revise(fixedPoints, domain, mode):
 	
 	changed = False
 
@@ -201,24 +205,36 @@ def domainFiltering(fixedPoints, domain, mode):
 				domain[xOfFixedPoint].remove(delete)
 	return changed
 
-def revise(NGstate):
-	domainFiltering(getFixedColumns(NGstate.state), getRowDomain(NGstate.state), "rowCheck")
-	domainFiltering(getFixedRows(NGstate.state), getColDomain(NGstate.state), "colCheck")
+def GAC(NGstate):
+	revise(getFixedColumns(NGstate.state), getRowDomain(NGstate.state), "rowCheck")
+	revise(getFixedRows(NGstate.state), getColDomain(NGstate.state), "colCheck")
 	changed = True
 	while True: 
-		changed = domainFiltering(getFixedColumns(NGstate.state), getRowDomain(NGstate.state), "rowCheck")
+		changed = revise(getFixedColumns(NGstate.state), getRowDomain(NGstate.state), "rowCheck")
 		if changed == False: 
 			break
-		changed = domainFiltering(getFixedRows(NGstate.state), getColDomain(NGstate.state), "colCheck")
+		changed = revise(getFixedRows(NGstate.state), getColDomain(NGstate.state), "colCheck")
 		if changed == False: 
 			break
-	print("solution", NGstate.getState())
+
+	rows = NGstate.getState()[1]
+
+	#gui = [[0]*rows]*columns
+	#print(len(gui))
+	'''
+	for i in range(2):
+		for row in range(rows):
+			print(NGstate.state[columns][rows].domain[0])
+			if NGstate.state[columns][rows].domain[0] == True:
+				gui[rows][columns] = 1
+
+	print(gui)
+'''
+	print("solution", NGstate.state[0][0].domain)
+	print(NGstate.getState()[0])
 	return NGstate.getState()
 
-s = Solver("chick.txt")
+s = Solver("snail2.txt")
 NGState = s.first_node
-revise(NGState)
-
-#var = Variable(0, [1], 10)
-#print(len(var.get_permutations([50],50)))
+GAC(NGState)
 

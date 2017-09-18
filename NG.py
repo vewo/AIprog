@@ -16,9 +16,9 @@ class NGState(State):
 		rows = []
 		columns = []
 		for i in range(len(state[0])):
-			rows.append(Variable(0, state[0][i], len(state[0])))
+			rows.append(Variable(0, state[0][i], len(state[1])))
 		for i in range(len(state[1])):
-			columns.append(Variable(1, state[1][i], len(state[1])))
+			columns.append(Variable(1, state[1][i], len(state[0])))
 		return [rows, columns]
 
 	def getID(self):
@@ -31,6 +31,7 @@ class Variable():
 		self.type = type
 		self.segmentSizes = segmentSizes
 		self.domain = self.get_permutations(segmentSizes, varLength)
+		self.varLength = varLength
 
 
 	def get_permutations(self, segmentSizes, varLength):
@@ -104,9 +105,63 @@ class Solver():
 
 
 s = Solver("cat.txt")
-state = s.first_node
-print(state.state[0][0].domain)
+f = s.first_node
 
-#print(s.brd[0])
+rowDomain = []
+for i in range(len(f.state[0])):
+	rowDomain += (f.state[0][i].domain)
+columnDomain = []
+for i in range(len(f.state[1])):
+
+	columnDomain += (f.state[1][i].domain)
+
+
+#ROWS
+fixedPointsRow = []
+for rowNo in range(len(f.state[0])):
+	domain = f.state[0][rowNo].domain #Get domain for variable
+	fillRate = []
+	fillRate = [0]*(f.state[0][rowNo].varLength)
+	#number of true in each index
+	for permutation in domain:
+		for index in range(len(permutation)):
+			if permutation[index] == True:
+				fillRate[index] += 1
+	for index in range(len(fillRate)):
+		if fillRate[index] == len(domain):
+			fixedPointsRow.append((rowNo, index, 1))
+		if fillRate[index] == len(domain):
+			fixedPointsRow.append((rowNo, index, 1))
+print(fixedPointsRow)
+#COLUMNS
+fixedPointsColumn = []
+for columnNo in range(len(f.state[1])):
+	domain = f.state[1][columnNo].domain #Get domain for variable
+	fillRate = []
+	fillRate = [0]*(f.state[1][columnNo].varLength)
+	#number of true in each index
+	for permutation in domain:
+		for index in range(len(permutation)):
+			if permutation[index] == True:
+				fillRate[index] += 1
+	for index in range(len(fillRate)):
+		if fillRate[index] == len(domain):
+			fixedPointsColumn.append((index, columnNo, 1))
+print(fixedPointsColumn)
+
+
+#print(columnDomain)
+
+var = f.state[0][0].domain # [kolonne/rad] [index]
+
+indexList = []
+indexList = [0]*len(rowDomain[0])
+#number of true in each index
+for i in var:
+	for j in range(len(i)):
+		if i[j] == True:
+			indexList[j] += 1
+
+
 
 

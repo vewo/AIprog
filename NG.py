@@ -6,6 +6,27 @@ class NGNode(Node):
 	def __init__(self, state, parent):
 		super(NGNode, self).__init__(state, parent)
 
+	def isSolution(self):
+		return (self.state.getTotalNoOfPermutations() == (len(self.state.state[0]) + len(self.state.state[1])))
+
+	def heuristic(self):
+		return (self.state.getTotalNoOfPermutations()-(len(self.state.state[0]) + len(self.state.state[1])))
+
+	def cost(self, parent):
+		return 0
+
+	def createChildren(self):
+		assumptionVar = self.state.getSmallestTooLargeDomain()
+		children = []
+		for i in range(assumptionVar[2]):
+			child = NGNode(copy.deepcopy(self.state), self)
+			child.state.state[assumptionVar[0]][assumptionVar[1]].domain = [child.state.state[assumptionVar[0]][assumptionVar[1]].domain[i]]
+			#print(child.state.state)
+			child.state.GAC()
+			self.f_value = self.heuristic()
+			children.append(child)
+		return children
+
 
 class NGState(State):
 	def __init__(self, board):
@@ -23,21 +44,135 @@ class NGState(State):
 			columns.append(Variable(1, segmentSizes, len(state[0])))
 		return [rows, columns]
 
-	def getState(self):
+	def getID(self): #unique identifier for the state
+		t = tuple()
+		for row in self.getRowDomain():
+			for permutation in row:
+				t += tuple(permutation)
+		for col in self.getColDomain():
+			for permutation in col:
+				t += tuple(permutation)
+		return hash(t)
+
+
+	def getTotalNoOfPermutations(self): #return the total number of values the variables can take
 		domainSize = 0
-		rowSize = 0
-		columnSize = 0
 		for row in self.state[0]:
 			domainSize += len(row.domain)
-			rowSize += len(row.domain)
 		for col in self.state[1]:
 			domainSize += len(col.domain)
-			columnSize += len(col.domain)
-		return [domainSize, rowSize, columnSize]
+		return domainSize
+
+	def getRowDomain(self):
+		rowDomain = []
+		for i in range(len(self.state[0])):
+			rowDomain.append((self.state[0][i].domain))
+		return rowDomain
 
 
-	def getID(self):
-		pass
+	def getColDomain(self):
+		columnDomain = []
+		for i in range(len(self.state[1])):
+			columnDomain.append(self.state[1][i].domain)
+		return columnDomain
+
+
+	def getFixedRows(self):
+	#ROWS
+		fixedPointsRow = []
+		for rowNo in range(len(self.state[0])):
+			domain = self.state[0][rowNo].domain #Get domain for row
+			fillRate = [0]*(self.state[0][rowNo].varLength)
+			#number of true in each index
+			for permutation in domain:
+				for index in range(len(permutation)):
+					if permutation[index] == True:
+						fillRate[index] += 1
+			for index in range(len(fillRate)):
+				if fillRate[index] == len(domain):
+					fixedPointsRow.append((rowNo, index, 1))
+				if fillRate[index] == 0:
+					fixedPointsRow.append((rowNo, index, 0))
+		return fixedPointsRow
+	
+
+	def getFixedColumns(self):
+		fixedPointsColumn = []
+		for columnNo in range(len(self.state[1])):
+			domain = self.state[1][columnNo].domain #Get domain for column
+			fillRate = [0]*(self.state[1][columnNo].varLength)
+			#number of true in each index
+			for permutation in domain:
+				for index in range(len(permutation)):
+					if permutation[index] == True:
+						fillRate[index] += 1
+			for index in range(len(fillRate)):
+				if fillRate[index] == len(domain):
+					fixedPointsColumn.append((index, columnNo, 1))
+				if fillRate[index] == 0:
+					fixedPointsColumn.append((index, columnNo, 0))
+		return fixedPointsColumn
+	
+
+	def revise(self, mode):
+		
+		changed = False
+
+		if mode == "rowCheck":
+			domain = self.getRowDomain()
+			for fixedPoint in self.getFixedColumns():
+				toBeDeleted = []
+				yOfFixedPoint = fixedPoint[0] #Row number ofs fixed point
+				xOfFixedPoint = fixedPoint[1] #Index of fixed point
+				permutations = domain[yOfFixedPoint] #Permutations of the row of interest
+				for permutation in permutations:
+					if permutation[xOfFixedPoint] != fixedPoint[2]:
+						toBeDeleted.append(permutation)
+						changed = True
+				for delete in toBeDeleted:
+					domain[yOfFixedPoint].remove(delete)
+		elif mode == "colCheck":
+			domain = self.getColDomain()
+			for fixedPoint in self.getFixedRows():
+				toBeDeleted = []
+				yOfFixedPoint = fixedPoint[0] #Column number of fixed point
+				xOfFixedPoint = fixedPoint[1] #Index of fixed point
+				permutations = domain[xOfFixedPoint] #Permutations on index from fixedpoint
+				for permutation in permutations:
+					if permutation[yOfFixedPoint] != fixedPoint[2]:
+						toBeDeleted.append(permutation)
+						changed = True
+				for delete in toBeDeleted:
+					domain[xOfFixedPoint].remove(delete)
+		return changed
+
+	def GAC(self):
+		self.revise("rowCheck")
+		self.revise("colCheck")
+		changed = True
+		while True: 
+			changed = self.revise("rowCheck")
+			if changed == False: 
+				break
+			changed = self.revise("colCheck")
+			if changed == False: 
+				break
+
+	def getSmallestTooLargeDomain(self):
+		rowDomain = self.getRowDomain()
+		colDomain = self.getColDomain()
+		smallest = (0,0,1000)
+		for row in sorted(rowDomain, key = len):
+			if ((len(row) >1) and (len(row) < smallest[2])):
+				smallest = (0, rowDomain.index(row), len(row))
+		for col in sorted(colDomain, key = len):
+			if ((len(col) >1) and (len(col) < smallest[2])):
+				smallest = (1, colDomain.index(col), len(col))
+		if(smallest[2]) == 1000:
+			smallest = (0,0,0)
+		return smallest
+
+
 
 
 
@@ -47,6 +182,12 @@ class Variable():
 		self.segmentSizes = segmentSizes
 		self.domain = self.get_permutations(segmentSizes, varLength)
 		self.varLength = varLength
+
+	def __repr__(self):
+		s = ""
+		for i in self.domain:
+			s += str(i)
+		return(s)
 
 
 	def get_permutations(self, segmentSizes, varLength):
@@ -80,161 +221,3 @@ class Variable():
 		            sub_permutation.append(sub_row[x-sub_start])
 		        permutations.append(sub_permutation)
 		return permutations
-
-
-class Solver():
-	def __init__(self, board):
-		self.brd = self.makeNewBoard(board)
-		self.first_node = NGState(self.brd)
-		#if board.split('.')[1] == "txt":
-		#	self.brd = self.makeNewBoard(board)
-		#	self.first_node = NGState(brd) #Setting state
-		#else:
-		#	print("unsupported input, give either a predefined level or a textfile as an argument")
-
-	def makeNewBoard(self, board):
-	    rows = []
-	    columns = []
-	    with open(board) as infile:
-	    	firstLine = infile.readline().split(' ')
-	    	noCols = int(firstLine[0])
-	    	noRows = int(firstLine[1])
-	    	for i in range(noRows):
-	    		rowLine = infile.readline().strip("\n").split(" ")
-	    		row = []
-	    		for ss in rowLine: 
-	    			row.append(int(ss))
-	    		rows.append(row)
-	    	for i in range(noCols):
-	    		colLine = infile.readline().strip("\n").split(" ")
-	    		col = []
-	    		for ss in colLine: 
-	    			col.append(int(ss))
-	    		columns.append(col)
-	    return [rows, columns]
-
-
-
-	def solve(self):
-		pass
-
-
-def getRowDomain(state):
-	rowDomain = []
-	for i in range(len(state[0])):
-		rowDomain.append((state[0][i].domain))
-		#rowDomain += (state[0][i].domain)
-	return rowDomain
-	
-
-def getColDomain(state):
-	columnDomain = []
-	for i in range(len(state[1])):
-		columnDomain.append(state[1][i].domain)
-		#columnDomain += (state[1][i].domain)
-	return columnDomain
-
-
-
-
-
-def getFixedRows(state):
-#ROWS
-	fixedPointsRow = []
-	for rowNo in range(len(state[0])):
-		domain = state[0][rowNo].domain #Get domain for row
-		fillRate = [0]*(state[0][rowNo].varLength)
-		#number of true in each index
-		for permutation in domain:
-			for index in range(len(permutation)):
-				if permutation[index] == True:
-					fillRate[index] += 1
-		for index in range(len(fillRate)):
-			if fillRate[index] == len(domain):
-				fixedPointsRow.append((rowNo, index, 1))
-			if fillRate[index] == 0:
-				fixedPointsRow.append((rowNo, index, 0))
-	return fixedPointsRow
-	
-
-def getFixedColumns(state):
-	fixedPointsColumn = []
-	for columnNo in range(len(state[1])):
-		domain = state[1][columnNo].domain #Get domain for column
-		fillRate = [0]*(state[1][columnNo].varLength)
-		#number of true in each index
-		for permutation in domain:
-			for index in range(len(permutation)):
-				if permutation[index] == True:
-					fillRate[index] += 1
-		for index in range(len(fillRate)):
-			if fillRate[index] == len(domain):
-				fixedPointsColumn.append((index, columnNo, 1))
-			if fillRate[index] == 0:
-				fixedPointsColumn.append((index, columnNo, 0))
-	return fixedPointsColumn
-	
-
-def revise(fixedPoints, domain, mode):
-	
-	changed = False
-
-	if mode == "rowCheck":
-		for fixedPoint in fixedPoints:
-			toBeDeleted = []
-			yOfFixedPoint = fixedPoint[0] #Row number of fixed point
-			xOfFixedPoint = fixedPoint[1] #Index of fixed point
-			permutations = domain[yOfFixedPoint] #Permutations of the row of interest
-			for permutation in permutations:
-				if permutation[xOfFixedPoint] != fixedPoint[2]:
-					toBeDeleted.append(permutation)
-					changed = True
-			for delete in toBeDeleted:
-				domain[yOfFixedPoint].remove(delete)
-	elif mode == "colCheck":
-		for fixedPoint in fixedPoints:
-			toBeDeleted = []
-			yOfFixedPoint = fixedPoint[0] #Column number of fixed point
-			xOfFixedPoint = fixedPoint[1] #Index of fixed point
-			permutations = domain[xOfFixedPoint] #Permutations on index from fixedpoint
-			for permutation in permutations:
-				if permutation[yOfFixedPoint] != fixedPoint[2]:
-					toBeDeleted.append(permutation)
-					changed = True
-			for delete in toBeDeleted:
-				domain[xOfFixedPoint].remove(delete)
-	return changed
-
-def GAC(NGstate):
-	revise(getFixedColumns(NGstate.state), getRowDomain(NGstate.state), "rowCheck")
-	revise(getFixedRows(NGstate.state), getColDomain(NGstate.state), "colCheck")
-	changed = True
-	while True: 
-		changed = revise(getFixedColumns(NGstate.state), getRowDomain(NGstate.state), "rowCheck")
-		if changed == False: 
-			break
-		changed = revise(getFixedRows(NGstate.state), getColDomain(NGstate.state), "colCheck")
-		if changed == False: 
-			break
-
-	rows = NGstate.getState()[1]
-
-	#gui = [[0]*rows]*columns
-	#print(len(gui))
-	'''
-	for i in range(2):
-		for row in range(rows):
-			print(NGstate.state[columns][rows].domain[0])
-			if NGstate.state[columns][rows].domain[0] == True:
-				gui[rows][columns] = 1
-
-	print(gui)
-'''
-	print("solution", NGstate.state[0][0].domain)
-	print(NGstate.getState()[0])
-	return NGstate.getState()
-
-s = Solver("snail2.txt")
-NGState = s.first_node
-GAC(NGState)
-

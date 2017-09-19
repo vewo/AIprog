@@ -115,7 +115,7 @@ class Vehicle():
     def getTuple(self):
         return (self.orientation, self.x, self.y, self.size)
 
-class Solver():
+class RHSolver():
 
     def __init__(self, level):
         if level == "easy":
@@ -195,7 +195,7 @@ class Solver():
             (1,5,4,2)]
 
 
-s = Solver("hard")
+s = RHSolver("hard")
 node, generated, explored = s.solve()
 print(node.g_value)
 print(explored)

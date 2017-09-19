@@ -13,7 +13,7 @@ class NGNode(Node):
 		return (self.state.getTotalNoOfPermutations()-(len(self.state.state[0]) + len(self.state.state[1])))
 
 	def cost(self, parent):
-		return 0
+		return 1
 
 	def createChildren(self):
 		assumptionVar = self.state.getSmallestTooLargeDomain()
@@ -45,14 +45,16 @@ class NGState(State):
 		return [rows, columns]
 
 	def getID(self): #unique identifier for the state
-		t = tuple()
+		s = ""
 		for row in self.getRowDomain():
 			for permutation in row:
-				t += tuple(permutation)
+				t = ''.join(str(samma) for samma in permutation)
+				s+= t
 		for col in self.getColDomain():
 			for permutation in col:
-				t += tuple(permutation)
-		return hash(t)
+				t = ''.join(str(samma) for samma in permutation)
+				s+= t
+		return hash(s)
 
 
 	def getTotalNoOfPermutations(self): #return the total number of values the variables can take
@@ -122,7 +124,7 @@ class NGState(State):
 			domain = self.getRowDomain()
 			for fixedPoint in self.getFixedColumns():
 				toBeDeleted = []
-				yOfFixedPoint = fixedPoint[0] #Row number ofs fixed point
+				yOfFixedPoint = fixedPoint[0] #Row number of fixed point
 				xOfFixedPoint = fixedPoint[1] #Index of fixed point
 				permutations = domain[yOfFixedPoint] #Permutations of the row of interest
 				for permutation in permutations:

@@ -44,17 +44,16 @@ class A_star():
         while(self.frontier):
             x = self.get()
             self.explored += 1
-            self.closed.add(x.state.ID)
+            self.closed.add(x.state.getID())
             
             if(x.isSolution()): #check if x is solution
                 return x, self.generated, self.explored
             
             childNodes = x.createChildren()
             self.generated += len(childNodes)
-
             for child in childNodes: #list of child-nodes
                 existing = self.existingState(child.state) #check if node with same state is in frontier, if so returns it's index in the frontier
-                if child.state.ID not in self.closed and not existing:
+                if child.state.getID() not in self.closed and not existing:
                     self.put(child)
                 elif existing:
                     old = self.frontier[existing]

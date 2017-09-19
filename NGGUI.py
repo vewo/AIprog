@@ -2,17 +2,16 @@ import tkinter as tk
 
 class NGApp(tk.Tk):
 
-	def __init__(self, nodes, solution):
+	def __init__(self, explored, solution_path, astar):
 		tk.Tk.__init__(self)
-		self.nodes = nodes
-		self.solution = solution
+		self.explored = explored
+		self.solution_path = solution_path
 		self.solution_counter = 0
 		self.counter = 0
+		self.astar = astar
 
-		self.colors = ["#000000", "#A9A9A4", "#FFFFFF"]
-
-		self.rows = len(solution.state.state[0])
-		self.columns = len(solution.state.state[1])
+		self.rows = len(solution_path[0].state.state[0])
+		self.columns = len(solution_path[1].state.state[1])
 		self.ratio = self.columns/self.rows
 		self.width = 600*self.ratio
 		self.height = 600
@@ -23,52 +22,55 @@ class NGApp(tk.Tk):
 
 		self.rect = {}
 		for column in range(self.columns):
-		    for row in range(self.rows):
-		        x1 = column*self.cellwidth
-		        y1 = row * self.cellheight
-		        x2 = x1 + self.cellwidth
-		        y2 = y1 + self.cellheight
-		        self.rect[row,column] = self.canvas.create_rectangle(x1,y1,x2,y2, fill="white", tags="rect")
-
-		self.redraw(100)
-
-	'''
-	def drawWhite(self, delay):
-		tempBoard = [["x"]*6]*6
-	    self.canvas.itemconfig("rect", fill="white")
-	    for i, row in enumerate(tempBoard): #  hack, index
-	        for j, column in enumerate(row): # hack, index
-	            item_id = self.rect[i,j]
-	            if tempBoard[j][i] == "x":
-	                self.canvas.itemconfig(item_id, fill="white")
-	'''
+			for row in range(self.rows):
+				x1 = column*self.cellwidth
+				y1 = row * self.cellheight
+				x2 = x1 + self.cellwidth
+				y2 = y1 + self.cellheight
+				self.rect[row,column] = self.canvas.create_rectangle(x1,y1,x2,y2, fill="white", tags="rect")
+		
+		self.redraw(500)
 
 
 
-	def redraw(self, delay, display_solution = True):
-	    tempBoard = list()
-	    if display_solution:
-	        for row in self.solution.state.state[0]:
-	        	tempBoard.append(row.domain[0])
-	        tempBoard.reverse()
-	        self.solution_counter +=1
-	    else:
-	        tempBoard = self.nodes[self.counter].state.getGrid()
-	    self.canvas.itemconfig("rect", fill="white")
-	    for i, row in enumerate(tempBoard): #  hack, index
-	        for j, column in enumerate(row): # hack, index
-	            item_id = self.rect[i, j]
+	def redraw(self, delay, display_solution = False):
+		tempBoard = list()
+		if self.astar:
+			if display_solution:
+				fixedPoints = self.solution_path[self.solution_counter].state.getFixedRows()
+				tempBoard = [["x" for _ in range(self.columns)] for _ in range(self.rows)]
+				for fixedPoint in fixedPoints:
+					tempBoard[fixedPoint[0]][fixedPoint[1]] = fixedPoint[2]
+				tempBoard.reverse()
+				self.solution_counter += 1
+			else:
+				fixedPoints = self.explored[self.counter].state.getFixedRows()
+				tempBoard = [["x" for _ in range(self.columns)] for _ in range(self.rows)]
+				for fixedPoint in fixedPoints:
+					tempBoard[fixedPoint[0]][fixedPoint[1]] = fixedPoint[2]
+				tempBoard.reverse()
+		else:
+			fixedPoints = self.solution_path.state.getFixedRows()
+			tempBoard = [["x" for _ in range(self.columns)] for _ in range(self.rows)]
+			for fixedPoint in fixedPoints:
+				tempBoard[fixedPoint[0]][fixedPoint[1]] = fixedPoint[2]
+			tempBoard.reverse()
+		self.canvas.itemconfig("rect", fill="white")
+		for i, row in enumerate(tempBoard): #  hack, index
+			for j, column in enumerate(row): # hack, index
+				item_id = self.rect[i, j]
+				if tempBoard[i][j] == 1:
+					self.canvas.itemconfig(item_id, fill="#000000")
+				elif tempBoard[i][j] == 0:
+					self.canvas.itemconfig(item_id, fill="#FFFFFF")
+				else:
+					self.canvas.itemconfig(item_id, fill="#A9A9A4")
+		self.counter += 1
+		if(self.astar and self.counter < len(self.explored)):
+			self.after(delay, lambda: self.redraw(delay))
+		elif(self.astar and self.solution_counter < len(self.solution_path)):
+			input()
 
-	            if tempBoard[i][j]:
-	                self.canvas.itemconfig(item_id, fill="black")
-	            else:
-	                self.canvas.itemconfig(item_id, fill="white")
-	    self.counter += 1
-	    #if(self.counter < len(self.nodes)):
-	    #    self.after(delay, lambda: self.redraw(delay))
-	    #elif(self.counter == len(self.nodes) and (self.solution_counter == 0)):
-	    #	print("Kommer hit")
-	    #	self.after(1000, lambda: self.drawWhite(1000))
-	    self.after(delay, lambda: self.redraw(delay, display_solution=True))
+			self.after(delay, lambda: self.redraw(delay, display_solution=True))
 
 

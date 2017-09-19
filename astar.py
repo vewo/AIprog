@@ -52,6 +52,7 @@ class A_star():
                 return x, self.generated, self.explored, self.explored_nodes
             
             childNodes = x.createChildren()
+            print(len(childNodes))
             self.generated += len(childNodes)
             for child in childNodes: #list of child-nodes
                 existing = self.existingState(child.state) #check if node with same state is in frontier, if so returns it's index in the frontier

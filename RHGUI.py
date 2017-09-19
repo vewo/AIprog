@@ -48,8 +48,11 @@ class RHApp(tk.Tk):
         self.counter += 1
         if(self.counter < len(self.nodes)):
             self.after(delay, lambda: self.redraw(delay))
-
+        elif(self.counter == len(self.nodes)):
+            input()
+            self.counter += 1
+            self.after(150, lambda: self.redraw(150, display_solution=True))
         elif(self.solution_counter < len(self.solution)):
-            self.after(delay+50, lambda: self.redraw(delay+50, display_solution=True))
+            self.after(delay, lambda: self.redraw(delay, display_solution=True))
 
 

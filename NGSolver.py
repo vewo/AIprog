@@ -5,6 +5,7 @@ from NGGUI import NGApp
 
 
 class NGSolver():
+	#Initialize
 	def __init__(self, board):
 		self.brd = self.makeNewBoard(board)
 		self.start_state = NGState(self.brd)
@@ -13,28 +14,29 @@ class NGSolver():
 		else:
 			print("unsupported input, give either a predefined level or a textfile as an argument")
 
+	#Reads from file and returns the a list with rows and columns
 	def makeNewBoard(self, board):
-	    rows = []
-	    columns = []
-	    with open(board) as infile:
-	    	firstLine = infile.readline().split(' ')
-	    	noCols = int(firstLine[0])
-	    	noRows = int(firstLine[1])
-	    	for i in range(noRows):
-	    		rowLine = infile.readline().strip("\n").split(" ")
-	    		row = []
-	    		for ss in rowLine: 
-	    			row.append(int(ss))
-	    		rows.append(row)
-	    	for i in range(noCols):
-	    		colLine = infile.readline().strip("\n").split(" ")
-	    		col = []
-	    		for ss in colLine: 
-	    			col.append(int(ss))
-	    		columns.append(col)
-	    return [rows, columns]
+		rows = []
+		columns = []
+		with open(board) as infile:
+			firstLine = infile.readline().split(' ')
+			noCols = int(firstLine[0])
+			noRows = int(firstLine[1])
+			for i in range(noRows):
+				rowLine = infile.readline().strip("\n").split(" ")
+				row = []
+				for ss in rowLine: 
+					row.append(int(ss))
+				rows.append(row)
+			for i in range(noCols):
+				colLine = infile.readline().strip("\n").split(" ")
+				col = []
+				for ss in colLine: 
+					col.append(int(ss))
+				columns.append(col)
+		return [rows, columns]
 
-
+	#Runs revise on start node, checks if it has found the solution, if not, runs A* search on the node.
 	def A_Star_GAC(self, NGstate):
 		NGState.GAC()
 		start_node = NGNode(NGstate, None)

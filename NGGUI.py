@@ -2,6 +2,7 @@ import tkinter as tk
 
 class NGApp(tk.Tk):
 
+	#Initialize
 	def __init__(self, explored, solution_path, astar):
 		tk.Tk.__init__(self)
 		self.explored = explored
@@ -40,7 +41,7 @@ class NGApp(tk.Tk):
 		self.redraw(self.delay)
 
 
-
+	
 	def redraw(self, delay, display_solution = False):
 		tempBoard = list()
 		if self.astar:

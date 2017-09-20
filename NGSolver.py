@@ -38,7 +38,8 @@ class NGSolver():
 	def A_Star_GAC(self, NGstate):
 		NGState.GAC()
 		start_node = NGNode(NGstate, None)
-		if not (start_node.isSolution()): #Has not reduced domains enough to have unique solution
+		#Checking if the domain is reduced enough to have unique solution
+		if not (start_node.isSolution()): 
 			solution = A_star(start_node.state, NGNode)
 			solutionNode, noGenerated, noExplored, explored_nodes = solution.a_star_search()
 			app = NGApp(explored_nodes, solutionNode.path(), True)
@@ -48,7 +49,7 @@ class NGSolver():
 			app.mainloop()
 
 
-s = NGSolver("nono-possible-3.txt")
+s = NGSolver("nonoboards/heart.txt")
 NGState = s.start_state
 s.A_Star_GAC(NGState)
 

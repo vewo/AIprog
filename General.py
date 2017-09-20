@@ -1,6 +1,7 @@
 
 
 class Node():
+    #Set initial parameters
     def __init__(self, state, parent):
         self.state = state
         self.parent = parent
@@ -11,7 +12,9 @@ class Node():
         self.f_value = self.h_value + self.g_value
         self.kids = []
     
-    def path(self): #Returns the path from the node to goal
+    #Returns the path from the node to the start node. Used at the goal node
+    #and returned reversed gives the path from the start node to the goal node
+    def path(self): 
         path = []
         node = self
         while node != None:
@@ -20,33 +23,41 @@ class Node():
         path.reverse()
         return path
     
+    #Checks if the current node is a solution
     def isSolution(self):
         pass
 
+    #Returns the cost from the parent to this node.
     def cost(self, parent):
         pass
     
+    #Calculates the heuristic for the current node.
     def heuristic(self):
         pass
     
+    #Creates the children of the current node.
     def createChildren(self):
         pass
     
     
 class State():
+    #Set initial parameters
     def __init__(self, state):
         self.state = self.initialize(state)
-        #print(self.state[0][0].segmentSizes)
         self.ID = self.getID()
-        
+    
+    #Initializes the state
     def initialize(self, state):
         pass
     
-    def getID(self): #unique identifier for the state
+    #Gives the state a unique identifier
+    def getID(self):
         pass
 
-    def getGrid(self): #represent state in format easy for visualization and computation
+    #Represent the state in a format easy for visualization and computation
+    def getGrid(self): 
         pass
 
-    def generateStates(self): #generate the possible states that can 
+    #Generate the possible states that can 
+    def generateStates(self): 
         pass

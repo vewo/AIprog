@@ -2,10 +2,10 @@ import tkinter as tk
 
 class RHApp(tk.Tk):
 
-    def __init__(self, nodes, solution):
+    def __init__(self, explored, solution_path):
         tk.Tk.__init__(self)
-        self.nodes = nodes
-        self.solution = solution
+        self.explored = explored
+        self.solution_path = solution_path
         self.solution_counter = 0
         self.counter = 0
 
@@ -17,6 +17,7 @@ class RHApp(tk.Tk):
         self.columns = 6
         self.cellwidth = 100
         self.cellheight = 100
+        self.delay = int(10000/len(self.explored))
 
         self.rect = {}
         for column in range(6):
@@ -27,16 +28,22 @@ class RHApp(tk.Tk):
                 y2 = y1 + self.cellheight
                 self.rect[row,column] = self.canvas.create_rectangle(x1,y1,x2,y2, fill="blue", tags="rect")
 
-        self.redraw(100)
+        self.var = tk.StringVar()
+        label = tk.Label(self, textvariable=self.var)
+
+        self.var.set("Are you ready")
+        label.pack()
+
+        self.redraw(self.delay)
 
 
     def redraw(self, delay, display_solution = False):
         tempBoard = list()
         if display_solution:
-            tempBoard = self.solution[self.solution_counter].state.getGrid()
+            tempBoard = self.solution_path[self.solution_counter].state.getGrid()
             self.solution_counter +=1
         else:
-            tempBoard = self.nodes[self.counter].state.getGrid()
+            tempBoard = self.explored[self.counter].state.getGrid()
         self.canvas.itemconfig("rect", fill="white")
         for i, row in enumerate(tempBoard): #  hack, index
             for j, column in enumerate(row): # hack, index
@@ -46,13 +53,16 @@ class RHApp(tk.Tk):
                 else:
                     self.canvas.itemconfig(item_id, fill=self.colors[tempBoard[j][i]])
         self.counter += 1
-        if(self.counter < len(self.nodes)):
+        if(self.counter < len(self.explored)):
+            self.var.set("State number" + str((self.counter)) + "/" + str(len(self.explored)-1))
             self.after(delay, lambda: self.redraw(delay))
-        elif(self.counter == len(self.nodes)):
+        elif(self.counter == len(self.explored)):
             input()
             self.counter += 1
-            self.after(150, lambda: self.redraw(150, display_solution=True))
-        elif(self.solution_counter < len(self.solution)):
+            self.after(delay, lambda: self.redraw(delay, display_solution=True))
+        elif(self.solution_counter < len(self.solution_path)):
+            self.delay = int(10000/len(self.solution_path))
+            self.var.set("State number" + str((self.solution_counter)) + "/" + str(len(self.solution_path)-1))
             self.after(delay, lambda: self.redraw(delay, display_solution=True))
 
 

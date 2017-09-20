@@ -31,7 +31,7 @@ class RHSolver():
         return node, noGenerated, noExplored, explored
 
 
-s = RHSolver("rhboard/medium.txt")
+s = RHSolver("rhboard/hard.txt")
 node, noGenerated, noExplored, explored = s.solve()
 print("Number of steps:", node.g_value, "\nNumber of nodes explored:", noExplored, "\nNumber of nodes generated:", noGenerated)
 app = RHApp(explored, node.path())

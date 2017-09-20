@@ -1,28 +1,30 @@
 from General import Node, State
 import copy
-import random
-
 
 class NGNode(Node):
+	#Initializes node from superclass
 	def __init__(self, state, parent):
 		super(NGNode, self).__init__(state, parent)
 
+	#Nonogram-specific check for solution
 	def isSolution(self):
 		return (self.state.getTotalNoOfPermutations() == (len(self.state.state[0]) + len(self.state.state[1])))
 
+	##Nonogram-specific heuristic
 	def heuristic(self):
 		return (self.state.getTotalNoOfPermutations()-(len(self.state.state[0]) + len(self.state.state[1])))
 
+	#Nonogram-specific cost
 	def cost(self, parent):
 		return 1
 
+	##Nonogram-specific method for creating children
 	def createChildren(self):
 		assumptionVar = self.state.getSmallestTooLargeDomain()
 		children = []
 		for i in range(assumptionVar[2]):
 			child = NGNode(copy.deepcopy(self.state), self)
 			child.state.state[assumptionVar[0]][assumptionVar[1]].domain = [child.state.state[assumptionVar[0]][assumptionVar[1]].domain[i]]
-			#print(child.state.state)
 			child.state.GAC()
 			self.f_value = self.heuristic()
 			children.append(child)
@@ -30,10 +32,12 @@ class NGNode(Node):
 
 
 class NGState(State):
+	#Initializes from superclass
 	def __init__(self, board):
 		super(NGState, self).__init__(board)
 
 
+	##Nonogram-specific initialization method
 	def initialize(self, state):
 		rows = []
 		columns = []
@@ -45,8 +49,8 @@ class NGState(State):
 			columns.append(Variable(1, segmentSizes, len(state[0])))
 		return [rows, columns]
 
-	def getID(self): #unique identifier for the state
-		randomStart = str(random.randint(0,100))
+	#Returns a unique identifier for the state
+	def getID(self): 
 		s = ""
 		for row in self.getRowDomain():
 			for permutation in row:
@@ -59,7 +63,8 @@ class NGState(State):
 		return hash(s)
 
 
-	def getTotalNoOfPermutations(self): #return the total number of values the variables can take
+	#Returns the total number of values the variables can take
+	def getTotalNoOfPermutations(self): 
 		domainSize = 0
 		for row in self.state[0]:
 			domainSize += len(row.domain)
@@ -67,13 +72,14 @@ class NGState(State):
 			domainSize += len(col.domain)
 		return domainSize
 
+	#Returns the domain of a given row
 	def getRowDomain(self):
 		rowDomain = []
 		for i in range(len(self.state[0])):
 			rowDomain.append((self.state[0][i].domain))
 		return rowDomain
 
-
+	#Returns the domain of a given column
 	def getColDomain(self):
 		columnDomain = []
 		for i in range(len(self.state[1])):
@@ -81,8 +87,9 @@ class NGState(State):
 		return columnDomain
 
 
+	#Returns a list of tuples with row number, index and value of a cell that
+	#given the domain, only can have one value.
 	def getFixedRows(self):
-	#ROWS
 		fixedPointsRow = []
 		for rowNo in range(len(self.state[0])):
 			domain = self.state[0][rowNo].domain #Get domain for row
@@ -99,7 +106,8 @@ class NGState(State):
 					fixedPointsRow.append((rowNo, index, 0))
 		return fixedPointsRow
 	
-
+	#Returns a list of tuples with column number, index and value of a cell that
+	#given the domain, only can have one value.
 	def getFixedColumns(self):
 		fixedPointsColumn = []
 		for columnNo in range(len(self.state[1])):
@@ -117,11 +125,11 @@ class NGState(State):
 					fixedPointsColumn.append((index, columnNo, 0))
 		return fixedPointsColumn
 	
-
-	def revise(self, mode):
-		
+	#Using the constraints, eliminates variables from the domain that don't
+	#satisfy the constraints
+	def revise(self, mode):		
 		changed = False
-
+		#Prunes the row domain
 		if mode == "rowCheck":
 			domain = self.getRowDomain()
 			for fixedPoint in self.getFixedColumns():
@@ -132,9 +140,10 @@ class NGState(State):
 				for permutation in permutations:
 					if permutation[xOfFixedPoint] != fixedPoint[2]:
 						toBeDeleted.append(permutation)
-						changed = True
 				for delete in toBeDeleted:
 					domain[yOfFixedPoint].remove(delete)
+					changed = True
+		#Prunes the column domain
 		elif mode == "colCheck":
 			domain = self.getColDomain()
 			for fixedPoint in self.getFixedRows():
@@ -145,11 +154,12 @@ class NGState(State):
 				for permutation in permutations:
 					if permutation[yOfFixedPoint] != fixedPoint[2]:
 						toBeDeleted.append(permutation)
-						changed = True
 				for delete in toBeDeleted:
 					domain[xOfFixedPoint].remove(delete)
+					changed = True
 		return changed
 
+	#Runs Revise until no furthing pruning of th domain is possible
 	def GAC(self):
 		self.revise("rowCheck")
 		self.revise("colCheck")
@@ -162,6 +172,7 @@ class NGState(State):
 			if changed == False: 
 				break
 
+	#Returns the domain that is the best candidate for making an assumption
 	def getSmallestTooLargeDomain(self):
 		rowDomain = self.getRowDomain()
 		colDomain = self.getColDomain()
@@ -181,6 +192,7 @@ class NGState(State):
 
 
 class Variable():
+	#Initialization
 	def __init__(self, type, segmentSizes, varLength):
 		self.type = type
 		self.segmentSizes = segmentSizes
@@ -193,7 +205,7 @@ class Variable():
 			s += str(i)
 		return(s)
 
-
+	#Returns the allowed permutations for a variable given its segments, and dimension
 	def get_permutations(self, segmentSizes, varLength):
 	#no segments
 		if len(segmentSizes) == 0:

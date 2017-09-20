@@ -13,12 +13,13 @@ class NGApp(tk.Tk):
 		self.rows = len(solution_path[0].state.state[0])
 		self.columns = len(solution_path[0].state.state[1])
 		self.ratio = self.columns/self.rows
-		self.width = 600*self.ratio
+		self.width = int(600*self.ratio)
 		self.height = 600
 		self.canvas = tk.Canvas(self, width=self.width, height=self.height, borderwidth=0, highlightthickness=0)
 		self.canvas.pack(side="top", fill="both", expand="true")
 		self.cellwidth = self.width/self.columns
 		self.cellheight = self.height/self.rows
+		self.delay = int(10000/len(self.explored))
 
 		self.rect = {}
 		for column in range(self.columns):
@@ -29,7 +30,14 @@ class NGApp(tk.Tk):
 				y2 = y1 + self.cellheight
 				self.rect[row,column] = self.canvas.create_rectangle(x1,y1,x2,y2, fill="white", tags="rect")
 		
-		self.redraw(500)
+
+		self.var = tk.StringVar()
+		label = tk.Label(self, textvariable=self.var)
+
+		self.var.set("Are you ready")
+		label.pack()
+
+		self.redraw(self.delay)
 
 
 
@@ -68,10 +76,16 @@ class NGApp(tk.Tk):
 					self.canvas.itemconfig(item_id, fill="#A9A9A4")
 		self.counter += 1
 		if(self.astar and self.counter < len(self.explored)):
+			self.var.set("State number" + str((self.counter)) + "/" + str(len(self.explored)-1))
 			self.after(delay, lambda: self.redraw(delay))
+		elif(self.counter == len(self.explored)):
+			input()
+			self.counter += 1
+			self.after(delay, lambda: self.redraw(delay, display_solution=True))
 		elif(self.astar and self.solution_counter < len(self.solution_path)):
 			input()
-
+			self.delay = int(10000/len(self.solution_path))
+			self.var.set("State number" + str((self.solution_counter)) + "/" + str(len(self.solution_path)-1))
 			self.after(delay, lambda: self.redraw(delay, display_solution=True))
 
 

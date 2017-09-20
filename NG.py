@@ -16,7 +16,7 @@ class NGNode(Node):
 
 	#Nonogram specific cost
 	def cost(self, parent):
-		return 1
+		return ((len(self.state.state[0]) + len(self.state.state[1])))
 
 	#Nonogram specific method for creating children
 	def createChildren(self):

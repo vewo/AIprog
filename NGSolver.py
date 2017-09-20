@@ -46,7 +46,7 @@ class NGSolver():
 			solutionNode, noGenerated, noExplored, explored_nodes = solution.a_star_search()
 			print("1. The total number of nodes generated: ", noGenerated)
 			print("2. The total number of nodes expanded: ", noExplored)
-			print("3. The total number of nodes on the path from the root to the solution state: ", solutionNode.g_value)
+			print("3. The total number of nodes on the path from the root to the solution state: ", len(solutionNode.path()))
 			app = NGApp(explored_nodes, solutionNode.path(), True)
 			app.mainloop()
 		else: 
@@ -58,7 +58,7 @@ class NGSolver():
 			app.mainloop()
 
 
-s = NGSolver("nonoboards/snail2.txt")
+s = NGSolver("nonoboards/nono-possible-3.txt")
 NGState = s.start_state
 s.A_Star_GAC(NGState)
 

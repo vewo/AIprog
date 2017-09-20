@@ -5,7 +5,7 @@ class Node():
         self.state = state
         self.parent = parent
         self.g_value = 0
-        if parent != 0:
+        if parent != None:
             self.g_value = self.parent.g_value + self.cost(parent)
         self.h_value = self.heuristic()
         self.f_value = self.h_value + self.g_value
@@ -14,10 +14,11 @@ class Node():
     def path(self): #Returns the path from the node to goal
         path = []
         node = self
-        while node:
+        while node != None:
             path.append(node)
             node = node.parent
-        return path.reverse()
+        path.reverse()
+        return path
     
     def isSolution(self):
         pass

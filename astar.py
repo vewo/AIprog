@@ -5,8 +5,9 @@ class A_star():
         self.start = start #sets the start state
         self.frontier_f_values = [] # the f values of the nodes in frontier, on same index as the respective node
         self.frontier = [] # the open nodes
-        self.closed = set() # closed nodes, should not allow for duplicates
+        self.closed = set() # ID of closed nodes, should not allow for duplicates
         self.explored = 0 #to measure the no of nodes the search explores
+        self.explored_nodes = []
         self.generated = 0 #to measure the no of nodes the search generates
         self.nodemode = nodemode # to generalize to different kinds of problems
     
@@ -36,7 +37,7 @@ class A_star():
         
     def a_star_search(self):
         #Make first start state into problem specific node
-        first = self.nodemode(self.start, 0)
+        first = self.nodemode(self.start, None)
         self.generated += 1
         self.put(first)
         
@@ -45,11 +46,13 @@ class A_star():
             x = self.get()
             self.explored += 1
             self.closed.add(x.state.getID())
+            self.explored_nodes.append(x)
             
             if(x.isSolution()): #check if x is solution
-                return x, self.generated, self.explored
+                return x, self.generated, self.explored, self.explored_nodes
             
             childNodes = x.createChildren()
+            print(len(childNodes))
             self.generated += len(childNodes)
             for child in childNodes: #list of child-nodes
                 existing = self.existingState(child.state) #check if node with same state is in frontier, if so returns it's index in the frontier

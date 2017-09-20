@@ -1,6 +1,7 @@
 import copy
 from NG import NGNode, NGState, Variable
 from astar import A_star
+from NGGUI import NGApp
 
 
 class NGSolver():
@@ -34,23 +35,20 @@ class NGSolver():
 	    return [rows, columns]
 
 
-
-	def solve(self):
-		pass
-
-
 	def A_Star_GAC(self, NGstate):
 		NGState.GAC()
-		start_node = NGNode(NGstate, 0)
+		start_node = NGNode(NGstate, None)
 		if not (start_node.isSolution()): #Has not reduced domains enough to have unique solution
 			solution = A_star(start_node.state, NGNode)
-			a,b,c, = solution.a_star_search()
-			print(a.state.state[0][8].domain)
+			solutionNode, noGenerated, noExplored, explored_nodes = solution.a_star_search()
+			app = NGApp(explored_nodes, solutionNode.path(), True)
+			app.mainloop()
+		else: 
+			app = NGApp([], start_node.path(), False)
+			app.mainloop()
 
 
-
-
-s = NGSolver("snail2.txt")
+s = NGSolver("nono-possible-3.txt")
 NGState = s.start_state
 s.A_Star_GAC(NGState)
 

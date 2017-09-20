@@ -33,8 +33,10 @@ class RHSolver():
         return node, noGenerated, noExplored, explored
 
 
-s = RHSolver("rhboard/hard.txt")
+s = RHSolver("rhboard/easy.txt")
 node, noGenerated, noExplored, explored = s.solve()
-print("Number of steps:", node.g_value, "\nNumber of nodes explored:", noExplored, "\nNumber of nodes generated:", noGenerated)
-app = RHApp(explored, node.path())
+print("1. The total number of nodes generated: ", noGenerated)
+print("2. The total number of nodes explored: ", noExplored)
+print("3. The total number of nodes on the path from the root to the solution state: ", node.g_value)
+app = RHApp(explored, node.path(), False)
 app.mainloop()

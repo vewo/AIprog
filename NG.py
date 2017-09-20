@@ -206,34 +206,35 @@ class Variable():
 		return(s)
 
 	#Returns the allowed permutations for a variable given its segments, and dimension
-	def get_permutations(self, segmentSizes, varLength):
-	#no segments
-		if len(segmentSizes) == 0:
-			row = []
-			for x in range(varLength):
-				row.append(False)
-			return [row]
+	def get_permutations(self, segmentSizes, varLength): #segmentSizes = list of the size of the segments to be placed, varLength = length of row/column to place segments in
+		#True means the cell chould be filled, False means unfilled
+		if len(segmentSizes) == 0:  #if there are no segments to be placed
+			fillingList = []
+			for i in range(varLength): #the length of the row/column to be filled 
+				fillingList.append(False) #all cells are empty
+			return [fillingList]
 
-		permutations = []
-	    
-		for start in range(varLength - segmentSizes[0] + 1):
-		    permutation = []
-		    for x in range(start):
-		        permutation.append(False)
-		    for x in range(start, start + segmentSizes[0]):
-		        permutation.append(True)
-		    x = start + segmentSizes[0]
-		    if x < varLength:
-		        permutation.append(False)
-		        x += 1
-		    if x == varLength and len(segmentSizes) == 0:
-		        permutations.append(permutation)
-		        break
-		    sub_start = x
-		    sub_rows = self.get_permutations(segmentSizes[1:len(segmentSizes)], varLength - sub_start)
-		    for sub_row in sub_rows:
-		        sub_permutation = copy.deepcopy(permutation)
-		        for x in range(sub_start, varLength):
-		            sub_permutation.append(sub_row[x-sub_start])
-		        permutations.append(sub_permutation)
-		return permutations
+		allPerm = [] #the final set of possible fillings of the row/column
+
+		for possibleStartIndex in range(varLength - segmentSizes[0]+1): #Yields all possible start indices for the first segment in the segmentSizes input variable
+			perm = []
+			for unfilled in range(possibleStartIndex): #Fill with False until the segment start
+				perm.append(False)
+			for filled in range(possibleStartIndex, possibleStartIndex+segmentSizes[0]): #Fill inn the cells of the segment with True
+				perm.append(True)
+			nextIndex = possibleStartIndex + segmentSizes[0] #index of the cell adjacent to where the segment ends
+			if nextIndex < varLength: #Still cells to be filled out, either with segments or with False (or combination)
+				perm.append(False) #needs to be at least one space between two segments
+				nextIndex += 1
+			if nextIndex == varLength and len(segmentSizes) == 0: #the last segment is filled out, and we have filled the whole row/column
+				allPerm.append(perm)
+				break
+			subStart = nextIndex
+			subVariables = self.get_permutations(segmentSizes[1:len(segmentSizes)], varLength-subStart) #returns all possible ways to fill out the remaining segments (if any) in the reminder of the row/column
+			for subVariable in subVariables:
+				subPerm = copy.deepcopy(perm)
+				for i in range(subStart, varLength):
+					subPerm.append(subVariable[i-subStart])
+				allPerm.append(subPerm)
+		return allPerm
+

@@ -44,14 +44,21 @@ class NGSolver():
 		if not (start_node.isSolution()): 
 			solution = A_star(start_node.state, NGNode)
 			solutionNode, noGenerated, noExplored, explored_nodes = solution.a_star_search()
+			print("1. The total number of nodes generated: ", noGenerated)
+			print("2. The total number of nodes expanded: ", noExplored)
+			print("3. The total number of nodes on the path from the root to the solution state: ", solutionNode.g_value)
 			app = NGApp(explored_nodes, solutionNode.path(), True)
 			app.mainloop()
 		else: 
+			print("ONLY USED REVISE")
+			print("1. The total number of nodes generated: ", 1)
+			print("2. The total number of nodes expanded: ", 1)
+			print("3. The total number of nodes on the path from the root to the solution state: ", 1)
 			app = NGApp([], start_node.path(), False)
 			app.mainloop()
 
 
-s = NGSolver("nonoboards/heart.txt")
+s = NGSolver("nonoboards/snail2.txt")
 NGState = s.start_state
 s.A_Star_GAC(NGState)
 

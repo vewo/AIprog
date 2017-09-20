@@ -2,7 +2,7 @@ import tkinter as tk
 
 class RHApp(tk.Tk):
 
-    def __init__(self, explored, solution_path):
+    def __init__(self, explored, solution_path, display):
         tk.Tk.__init__(self)
         self.explored = explored
         self.solution_path = solution_path
@@ -34,7 +34,7 @@ class RHApp(tk.Tk):
         self.var.set("Are you ready")
         label.pack()
 
-        self.redraw(self.delay)
+        self.redraw(self.delay, display_solution=display)
 
 
     def redraw(self, delay, display_solution = False):
@@ -53,7 +53,7 @@ class RHApp(tk.Tk):
                 else:
                     self.canvas.itemconfig(item_id, fill=self.colors[tempBoard[j][i]])
         self.counter += 1
-        if(self.counter < len(self.explored)):
+        if(not display_solution and self.counter < len(self.explored)):
             self.var.set("State number" + str((self.counter)) + "/" + str(len(self.explored)-1))
             self.after(delay, lambda: self.redraw(delay))
         elif(self.counter == len(self.explored)):
@@ -61,7 +61,7 @@ class RHApp(tk.Tk):
             self.counter += 1
             self.after(delay, lambda: self.redraw(delay, display_solution=True))
         elif(self.solution_counter < len(self.solution_path)):
-            self.delay = int(10000/len(self.solution_path))
+            delay = int(10000/len(self.solution_path))
             self.var.set("State number" + str((self.solution_counter)) + "/" + str(len(self.solution_path)-1))
             self.after(delay, lambda: self.redraw(delay, display_solution=True))
 

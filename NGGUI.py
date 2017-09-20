@@ -20,7 +20,7 @@ class NGApp(tk.Tk):
 		self.canvas.pack(side="top", fill="both", expand="true")
 		self.cellwidth = self.width/self.columns
 		self.cellheight = self.height/self.rows
-		self.delay = int(10000/len(self.explored))
+		self.delay = int(100)
 
 		self.rect = {}
 		for column in range(self.columns):
@@ -35,7 +35,7 @@ class NGApp(tk.Tk):
 		self.var = tk.StringVar()
 		label = tk.Label(self, textvariable=self.var)
 
-		self.var.set("Are you ready")
+		self.var.set("Deepmind")
 		label.pack()
 
 		self.redraw(self.delay)
@@ -53,13 +53,13 @@ class NGApp(tk.Tk):
 				tempBoard.reverse()
 				self.solution_counter += 1
 			else:
+				delay = int(5000/len(self.explored))
 				fixedPoints = self.explored[self.counter].state.getFixedRows()
 				tempBoard = [["x" for _ in range(self.columns)] for _ in range(self.rows)]
 				for fixedPoint in fixedPoints:
 					tempBoard[fixedPoint[0]][fixedPoint[1]] = fixedPoint[2]
 				tempBoard.reverse()
 		else:
-			print(self.solution_path)
 			fixedPoints = self.solution_path[0].state.getFixedRows()
 			tempBoard = [["x" for _ in range(self.columns)] for _ in range(self.rows)]
 			for fixedPoint in fixedPoints:
@@ -85,7 +85,7 @@ class NGApp(tk.Tk):
 			self.after(delay, lambda: self.redraw(delay, display_solution=True))
 		elif(self.astar and self.solution_counter < len(self.solution_path)):
 			input()
-			self.delay = int(10000/len(self.solution_path))
+			delay = 100
 			self.var.set("State number" + str((self.solution_counter)) + "/" + str(len(self.solution_path)-1))
 			self.after(delay, lambda: self.redraw(delay, display_solution=True))
 

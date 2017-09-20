@@ -15,9 +15,9 @@ class A_star():
     def existingState(self, state):
         dict = {}
         for i in range(len(self.frontier)): #Make dictionary of generated states and their respective nodes' index in frontier
-            dict[self.frontier[i].state.getID()] = i 
+            dict[self.frontier[i].state.ID] = i 
         if state.getID() in dict:
-            return dict.get(state.getID()) #returns index (in frontier) of potentially created node
+            return dict.get(state.ID) #returns index (in frontier) of potentially created node
         return False
 
     #Functions for managing the lists of open nodes and their respective f_values

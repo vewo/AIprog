@@ -48,7 +48,7 @@ class NGSolver():
 			app.mainloop()
 
 
-s = NGSolver("nono-possible-3.txt")
+s = NGSolver("nonoboards/nono-possible-3.txt")
 NGState = s.start_state
 s.A_Star_GAC(NGState)
 

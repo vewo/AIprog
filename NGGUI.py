@@ -11,7 +11,7 @@ class NGApp(tk.Tk):
 		self.astar = astar
 
 		self.rows = len(solution_path[0].state.state[0])
-		self.columns = len(solution_path[1].state.state[1])
+		self.columns = len(solution_path[0].state.state[1])
 		self.ratio = self.columns/self.rows
 		self.width = 600*self.ratio
 		self.height = 600
@@ -50,7 +50,8 @@ class NGApp(tk.Tk):
 					tempBoard[fixedPoint[0]][fixedPoint[1]] = fixedPoint[2]
 				tempBoard.reverse()
 		else:
-			fixedPoints = self.solution_path.state.getFixedRows()
+			print(self.solution_path)
+			fixedPoints = self.solution_path[0].state.getFixedRows()
 			tempBoard = [["x" for _ in range(self.columns)] for _ in range(self.rows)]
 			for fixedPoint in fixedPoints:
 				tempBoard[fixedPoint[0]][fixedPoint[1]] = fixedPoint[2]

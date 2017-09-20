@@ -15,8 +15,8 @@ class A_star():
         dict = {}
         for i in range(len(self.frontier)): #Make dictionary of generated states and their respective nodes' index in frontier
             dict[self.frontier[i].state.ID] = i 
-        if state.ID in dict:
-            return dict.get(state.ID) #returns index (in frontier) of potentially created node
+        if state.getID() in dict:
+            return dict.get(state.getID()) #returns index (in frontier) of potentially created node
         return False
 
     #Functions for managing the lists of open nodes and their respective f_values   
@@ -42,17 +42,15 @@ class A_star():
         self.put(first)
         
         #as long as frontier is not empty
-        while(self.frontier):
+        while(len(self.frontier) > 0):
             x = self.get()
             self.explored += 1
             self.closed.add(x.state.getID())
             self.explored_nodes.append(x)
-            
             if(x.isSolution()): #check if x is solution
                 return x, self.generated, self.explored, self.explored_nodes
             
             childNodes = x.createChildren()
-            print(len(childNodes))
             self.generated += len(childNodes)
             for child in childNodes: #list of child-nodes
                 existing = self.existingState(child.state) #check if node with same state is in frontier, if so returns it's index in the frontier
@@ -63,5 +61,4 @@ class A_star():
                     if child.g_value < old.g_value: #Means one has found a cheaper way to get to the same state, as the heuristic will be equal
                         self.remove(existing)
                         self.put(child)
-
         return False

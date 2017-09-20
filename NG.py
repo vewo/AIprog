@@ -1,5 +1,6 @@
 from General import Node, State
 import copy
+import random
 
 
 class NGNode(Node):
@@ -45,6 +46,7 @@ class NGState(State):
 		return [rows, columns]
 
 	def getID(self): #unique identifier for the state
+		randomStart = str(random.randint(0,100))
 		s = ""
 		for row in self.getRowDomain():
 			for permutation in row:

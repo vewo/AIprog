@@ -4,25 +4,32 @@ import copy
 from General import Node, State
 
 class RHNode(Node):
+    #Initialize from superclass
     def __init__(self, state, parent):
         super(RHNode, self).__init__(state, parent)
             
+    #Rush Hour specific cost for A*
     def cost(self, parent):
         return 1
     
+    #Rush Hour specific heuristic for A*
     def heuristic(self):
         grid = self.state.getGrid() #get the grid
         target_car = self.state.state[0]
         no_blocks = 0
         goal_distance = 4 - target_car.x #the location of leftmost corner for car when in goal == 4
-        for x in range(target_car.x+target_car.size, 6): #check number of cars blocking between the target car and goal
+        
+        #Check number of cars blocking between the target car and goal
+        for x in range(target_car.x+target_car.size, 6): 
             if grid[x][2] != "x":
                 no_blocks += 1
         return no_blocks + goal_distance
 
+    #Rush Hour specific test to see if the node is a goal node
     def isSolution(self):
         return self.state.state[0].x == 4 #Check if leftmost corner of size 2 target car is in col 4 -> righmost corner in col 5 == goal
 
+    #Rush Hour specific method for creating children
     def createChildren(self):
         feasible_states = self.state.generateStates()
         children = []
@@ -31,9 +38,11 @@ class RHNode(Node):
         return children
 
 class RHState(State):
+    #Initialize from superclass
     def __init__(self, state):
         super(RHState, self).__init__(state)
     
+    ##Rush Hour specific initialization method
     def initialize(self, state):
         vehicles = []
         no = 0
@@ -42,12 +51,15 @@ class RHState(State):
             no += 1
         return vehicles
     
-    def getID(self): #unique identifier for the state
+    #Returns a unique identifier for the state
+    def getID(self):
         return hash(''.join(str(e) for e in self.getGrid()))
     
+    #Returns the grid with vehicle objects
     def getGrid(self):
         grid = [["x" for column in range(6)] for row in range(6)]
-        for v in self.state: #adding vehicles to the grid
+        #Adding vehicles to the grid
+        for v in self.state:
             if v.orientation == 0:   #horizontal
                 for x in range(v.size):
                     grid[v.x + x][v.y] = v.no
@@ -56,13 +68,16 @@ class RHState(State):
                     grid[v.x][v.y + y] = v.no
         return grid
 
+    #Creates a state with a list of vehicles as input
     def makeState(self, vehicles):
         state = []
+        #Adds the quad to the state
         for v in vehicles:
             state.append(v.getTuple())
         new_state = RHState(state)
         return new_state
-          
+    
+    #Generates feasible states
     def generateStates(self): 
         grid = self.getGrid()
         feasible_states = []
@@ -101,12 +116,13 @@ class RHState(State):
         return feasible_states
 
 class Vehicle():
+    #Initialize
     def __init__(self, no, orientation, x, y, size):
         self.no = no
         self.orientation = orientation
         self.x = x
         self.y = y
         self.size = size
-    
+    #Returns the quad of a vehicle.
     def getTuple(self):
         return (self.orientation, self.x, self.y, self.size)

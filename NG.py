@@ -6,19 +6,19 @@ class NGNode(Node):
 	def __init__(self, state, parent):
 		super(NGNode, self).__init__(state, parent)
 
-	#Nonogram-specific check for solution
+	#Nonogram specific check for solution
 	def isSolution(self):
 		return (self.state.getTotalNoOfPermutations() == (len(self.state.state[0]) + len(self.state.state[1])))
 
-	##Nonogram-specific heuristic
+	##Nonogram specific heuristic
 	def heuristic(self):
 		return (self.state.getTotalNoOfPermutations()-(len(self.state.state[0]) + len(self.state.state[1])))
 
-	#Nonogram-specific cost
+	#Nonogram specific cost
 	def cost(self, parent):
 		return 1
 
-	##Nonogram-specific method for creating children
+	#Nonogram specific method for creating children
 	def createChildren(self):
 		assumptionVar = self.state.getSmallestTooLargeDomain()
 		children = []
@@ -37,7 +37,7 @@ class NGState(State):
 		super(NGState, self).__init__(board)
 
 
-	##Nonogram-specific initialization method
+	#Nonogram specific initialization method
 	def initialize(self, state):
 		rows = []
 		columns = []
